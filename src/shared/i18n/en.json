@@ -53,6 +53,7 @@
   "lobby.roomCode": "Room code",
   "lobby.scanToJoin": "Scan to join",
   "lobby.copyLink": "Copy join link",
+  "lobby.rules": "Game rules",
   "lobby.copied": "Copied",
   "lobby.players": "Players",
   "lobby.seats": "{n}/{max} seats",

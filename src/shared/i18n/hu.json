@@ -53,6 +53,7 @@
   "lobby.roomCode": "Szobakód",
   "lobby.scanToJoin": "Olvasd be a csatlakozáshoz",
   "lobby.copyLink": "Csatlakozási link másolása",
+  "lobby.rules": "Játékszabályok",
   "lobby.copied": "Kimásolva",
   "lobby.players": "Játékosok",
   "lobby.seats": "{n}/{max} hely",

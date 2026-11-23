@@ -242,7 +242,7 @@ function RoomScreen({ code, conn }: { code: string; conn: ReturnType<typeof useR
       <main className="container page room-width" style={{ paddingTop: 20 }}>
         {connBanner}
         {view.phase === "lobby" && view.you.role === "guest" && <JoinForm view={view} send={send} />}
-        {view.phase === "lobby" && view.you.role !== "guest" && <Lobby view={view} send={send} />}
+        {view.phase === "lobby" && view.you.role !== "guest" && <Lobby view={view} send={send} onRules={() => setRulesAck(false)} />}
         {view.phase === "countdown" && <Countdown view={view} offset={conn.offset} />}
         {(view.phase === "trading" || view.phase === "paused") && (
           <Trading view={view} send={send} settled={conn.settled} offset={conn.offset} />

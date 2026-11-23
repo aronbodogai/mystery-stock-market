@@ -53,6 +53,7 @@
   "lobby.roomCode": "방 코드",
   "lobby.scanToJoin": "스캔해서 참가",
   "lobby.copyLink": "참가 링크 복사",
+  "lobby.rules": "게임 규칙",
   "lobby.copied": "복사됨",
   "lobby.players": "플레이어",
   "lobby.seats": "{n}/{max}석",

@@ -107,7 +107,15 @@ export function ConnectTv({ send }: { send: (m: ClientMsg) => boolean }) {
   );
 }
 
-export function Lobby({ view, send }: { view: View; send: (m: ClientMsg) => boolean }) {
+export function Lobby({
+  view,
+  send,
+  onRules,
+}: {
+  view: View;
+  send: (m: ClientMsg) => boolean;
+  onRules?: () => void;
+}) {
   const { t, tp } = useI18n();
   const roundLabel = (s: number) => (s === 0 ? t("set.noLimit") : t("set.seconds", { n: s }));
   const isHost = view.you.role === "host";
@@ -146,6 +154,11 @@ export function Lobby({ view, send }: { view: View; send: (m: ClientMsg) => bool
                 >
                   {copied ? t("lobby.copied") : t("lobby.copyLink")}
                 </button>
+                {onRules && (
+                  <button className="btn btn-sm" onClick={onRules}>
+                    {t("lobby.rules")}
+                  </button>
+                )}
               </div>
             </div>
           </div>
