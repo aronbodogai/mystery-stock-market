@@ -1,6 +1,6 @@
 import { doFreeze, doPiece, doSecret, doTrade } from "./actions";
 import { botAct, createBot } from "./bots";
-import { NUM_STOCKS, START_CASH, START_PIECES, START_PRICE, TOTAL_ROUNDS } from "./constants";
+import { START_CASH, START_PIECES, START_PRICE, TOTAL_ROUNDS } from "./constants";
 import { seedRng } from "./rng";
 import { makeRules } from "./rules";
 import { settle } from "./settle";
@@ -15,18 +15,19 @@ export interface GameInit {
 
 export function createGame(init: GameInit): GameState {
   const rng = seedRng(init.seed);
-  const { rules, logo } = makeRules(init.ruleSet, rng);
-  const opening = new Array(NUM_STOCKS).fill(START_PRICE);
+  const { rules, logo, companies } = makeRules(init.ruleSet, rng);
+  const n = companies.length;
+  const opening = new Array(n).fill(START_PRICE);
   const seats = init.seats.map((s) => ({
     id: s.id,
     name: s.name,
     bot: s.bot ? createBot(rng, s.bot.skill) : null,
     cash: START_CASH,
-    shares: zeros(),
+    shares: zeros(n),
     pieces: START_PIECES,
     secretStock: null,
     secretRound: null,
-    peeks: zeros(),
+    peeks: zeros(n),
     minNet: START_CASH,
     baseCash: START_CASH,
     baseNet: START_CASH,
@@ -36,6 +37,7 @@ export function createGame(init: GameInit): GameState {
     v: 1,
     seed: init.seed,
     ruleSet: init.ruleSet,
+    companies,
     rng,
     rules,
     logo,
@@ -43,10 +45,10 @@ export function createGame(init: GameInit): GameState {
     finished: false,
     prices: opening.slice(),
     history: [opening.slice()],
-    buyVol: zeros(),
-    sellVol: zeros(),
-    holdings: zeros(),
-    prevHoldings: zeros(),
+    buyVol: zeros(n),
+    sellVol: zeros(n),
+    holdings: zeros(n),
+    prevHoldings: zeros(n),
     lastStats: null,
     secrets: [],
     seats,
@@ -78,8 +80,8 @@ export function settleRound(state: GameState): SettleResult {
     holdings: state.holdings.slice(),
   };
   state.prevHoldings = state.holdings.slice();
-  state.buyVol = zeros();
-  state.sellVol = zeros();
+  state.buyVol = zeros(after.length);
+  state.sellVol = zeros(after.length);
   state.prices = after.slice();
   state.history.push(after.slice());
   for (const seat of state.seats) seat.minNet = Math.min(seat.minNet, netWorth(seat, after));

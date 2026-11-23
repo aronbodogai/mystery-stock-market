@@ -4,8 +4,10 @@ import { LANGS } from "../../shared/lang";
 import { GAME_MAX_MS, ROUND_SECONDS, type RoundSeconds } from "../../engine/room";
 import type { ClientMsg, View } from "../../shared/protocol";
 import { IconTv } from "../components/icons";
+import { RuleSetSelect } from "../components/RuleSetSelect";
 import { QR } from "../components/QR";
 import { useI18n } from "../i18n";
+import { ruleSetLabel } from "../ruleSets";
 
 export function joinUrl(view: View): string {
   return `${view.origin}/j/${view.code}`;
@@ -190,13 +192,7 @@ export function Lobby({
           </div>
           <div className="stack-sm">
             <span className="small muted">{t("set.ruleSet")}</span>
-            <Seg
-              label={t("set.ruleSet")}
-              value={c.ruleSet}
-              options={["show", "random"] as const}
-              onChange={(v) => set({ ruleSet: v })}
-              render={(v) => t(v === "show" ? "set.ruleShow" : "set.ruleRandom")}
-            />
+            <RuleSetSelect value={c.ruleSet} onChange={(v) => set({ ruleSet: v })} />
           </div>
           <div className="stack-sm">
             <span className="small muted">{t("set.roundLength")}</span>
@@ -294,7 +290,7 @@ export function Lobby({
         <div className="card card-pad stack-sm">
           <h3>{t("lobby.waiting")}</h3>
           <div className="row wrap">
-            <span className="chip">{t(c.ruleSet === "show" ? "set.ruleShow" : "set.ruleRandom")}</span>
+            <span className="chip">{t(ruleSetLabel(c.ruleSet))}</span>
             <span className="chip">{roundLabel(c.roundSeconds)}</span>
             {bots > 0 && (
               <span className="chip">

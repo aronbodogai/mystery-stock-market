@@ -10,12 +10,13 @@ import type {
   View,
 } from "../shared/protocol";
 import { renderRule } from "../shared/ruleTemplates";
-import { MAX_GROUP, MAX_SEATS, MIN_SEATS, NUM_STOCKS, TOTAL_ROUNDS } from "./constants";
+import { MAX_GROUP, MAX_SEATS, MIN_SEATS, TOTAL_ROUNDS } from "./constants";
 import { piecesEarned, ranking } from "./game";
 import { seatedPlayers, type RoomState } from "./room";
-import { logoShape, SHOW_LOGO } from "./rules";
+import { companiesFor, lobbyLogo, logoShape } from "./rules";
 import {
   anySecretActive,
+  companiesOf,
   findSeat,
   holdsHidden,
   isHidden,
@@ -50,7 +51,8 @@ function projectStocks(g: GameState, seat: Seat | null, lang: Lang): StockView[]
   const out: StockView[] = [];
   const pubLevel = g.finished ? MAX_GROUP : revealLevel(g.round);
   const points = g.finished ? g.history.length : g.round; // history[0..round-1] are prices during rounds 1..round
-  for (let i = 0; i < NUM_STOCKS; i++) {
+  const companies = companiesOf(g);
+  for (let i = 0; i < g.prices.length; i++) {
     const hiddenNow = !g.finished && isHidden(g, i);
     // A point k is the price during round k+1. Points from hidden rounds are never drawn.
     const chart: (number | null)[] = [];
@@ -59,7 +61,7 @@ function projectStocks(g: GameState, seat: Seat | null, lang: Lang): StockView[]
     const cur = chart[chart.length - 1] ?? null;
     const prev = chart.length >= 2 ? chart[chart.length - 2]! : null;
     const level = seat ? seatLevel(g, seat, i) : pubLevel;
-    const rule: RuleToken[] = renderRule(g.rules[i]!, i, lang).map((tok) =>
+    const rule: RuleToken[] = renderRule(g.rules[i]!, i, lang, companies).map((tok) =>
       tok.g <= level ? { g: tok.g, text: tok.text } : { g: tok.g, len: [...tok.text].length },
     );
     out.push({
@@ -128,8 +130,9 @@ function projectResults(room: RoomState, g: GameState, viewer: Viewer): Results 
   return {
     seed: g.seed,
     ruleSet: g.ruleSet,
+    companies: companiesOf(g),
     ruleTypes: g.rules.map((r) => r.type),
-    rules: g.rules.map((r, i) => renderRule(r, i, room.config.lang)), // results use the game language too
+    rules: g.rules.map((r, i) => renderRule(r, i, room.config.lang, companiesOf(g))), // results use the game language too
     history: g.history.map((h) => h.slice()),
     ranking: rk.map((row) => {
       const seat = findSeat(g, row.seatId)!;
@@ -220,7 +223,8 @@ export function project(room: RoomState, viewer: Viewer, env: ProjectEnv): View 
     totalRounds: TOTAL_ROUNDS,
     revealLevel: g && inGame ? (g.finished ? MAX_GROUP : revealLevel(g.round)) : 0,
     nextReveal: g && inGame && !g.finished ? nextRevealRound(g.round) : null,
-    logo: logoShape(g ? g.logo : room.config.ruleSet === "show" ? SHOW_LOGO : []),
+    logo: logoShape(g ? g.logo : lobbyLogo(room.config.ruleSet)),
+    companies: g ? companiesOf(g) : companiesFor(room.config.ruleSet),
     stocks: g && inGame ? projectStocks(g, seat, lang) : [],
     me: g && inGame && seat ? projectMe(room, g, seat) : null,
     standings,

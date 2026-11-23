@@ -2,6 +2,7 @@ import type { ClientMsg, Results as ResultsT, View } from "../../shared/protocol
 import { CompanyLogo } from "../components/CompanyLogo";
 import { Sparkline } from "../components/Sparkline";
 import { useI18n } from "../i18n";
+import { ruleSetLabel } from "../ruleSets";
 
 export function Podium({ results, big = false }: { results: ResultsT; big?: boolean }) {
   const { money } = useI18n();
@@ -113,7 +114,7 @@ export function ResultsView({ view, send }: { view: View; send: (m: ClientMsg) =
         <AllRules results={res} />
         <div className="small muted">
           {t("results.seed")} <span className="mono">{res.seed}</span> ·{" "}
-          {t(res.ruleSet === "show" ? "set.ruleShow" : "set.ruleRandom")}
+          {t(ruleSetLabel(res.ruleSet))}
         </div>
       </div>
     </div>

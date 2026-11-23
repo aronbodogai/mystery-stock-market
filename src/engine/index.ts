@@ -3,6 +3,7 @@ export * from "./types";
 export * from "./rng";
 export * from "./settle";
 export * from "./rules";
+export * from "./boards";
 export * from "./state";
 export * from "./actions";
 export * from "./bots";

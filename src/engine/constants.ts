@@ -6,10 +6,16 @@ export const STOCK_IDS = [
   "airtight",
   "seasoned",
   "alt",
+  // Extra companies for boards bigger than the show's (see boards.ts).
+  "tidal",
+  "halo",
 ] as const;
 export type StockId = (typeof STOCK_IDS)[number];
 
+/** Every company the game knows; a board uses some of them. */
 export const NUM_STOCKS = STOCK_IDS.length;
+/** The show's seven companies (STOCK_IDS 0..6): the Show and Random boards. */
+export const CLASSIC_STOCKS = 7;
 export const START_PRICE = 10_000;
 export const PRICE_FLOOR = 100;
 export const START_CASH = 100_000;

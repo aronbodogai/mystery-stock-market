@@ -1,5 +1,5 @@
 import { doPiece, doSecret, doTrade } from "./actions";
-import { NUM_STOCKS, PIECES_LAST_ROUND, START_PIECES, TOTAL_ROUNDS } from "./constants";
+import { PIECES_LAST_ROUND, START_PIECES, TOTAL_ROUNDS } from "./constants";
 import { chance, pick, rand, randInt, shuffle, type RngState } from "./rng";
 import { settle } from "./settle";
 import { buildCtx, hiddenMask, lastMoves } from "./state";
@@ -45,13 +45,13 @@ function smartTrade(state: GameState, seat: Seat): void {
   const rng = state.rng;
   // Sell predicted losers.
   let pred = predict(state);
-  for (let s = 0; s < NUM_STOCKS; s++) {
+  for (let s = 0; s < state.prices.length; s++) {
     if (seat.shares[s]! > 0 && pred[s]! < state.prices[s]!) doTrade(state, seat.id, s, "sell", seat.shares[s]!);
   }
   // Buy the best predicted gainers (two passes), checking that our own order does not flip the outcome.
   for (let pass = 0; pass < 2; pass++) {
     pred = predict(state);
-    const order = shuffle(rng, [...Array(NUM_STOCKS).keys()]).sort(
+    const order = shuffle(rng, [...Array(state.prices.length).keys()]).sort(
       (a, b) => pred[b]! / state.prices[b]! - pred[a]! / state.prices[a]!,
     );
     for (const s of order) {
@@ -77,7 +77,7 @@ function styleTrade(state: GameState, seat: Seat): void {
   const rng = state.rng;
   const moves = lastMoves(state);
   const style = seat.bot!.style;
-  const stocks = shuffle(rng, [...Array(NUM_STOCKS).keys()]);
+  const stocks = shuffle(rng, [...Array(state.prices.length).keys()]);
   if (!moves && style !== "holder") {
     // Round 1: everyone except holders dips a toe in.
     for (const s of stocks.slice(0, randInt(rng, 1, 2))) buyWith(state, seat, s, 0.2 + rand(rng) * 0.2);
@@ -134,8 +134,8 @@ export function botAct(state: GameState, seat: Seat): void {
   if (seat.secretStock === null && bot.secretRound !== null && r >= bot.secretRound) {
     const secretRule = state.rules.find((x) => x.type === "secret");
     const mask = hiddenMask(state, r + 1);
-    let target = insight && secretRule && secretRule.type === "secret" ? secretRule.a : randInt(rng, 0, NUM_STOCKS - 1);
-    if (!insight && mask[target]) target = randInt(rng, 0, NUM_STOCKS - 1);
+    let target = insight && secretRule && secretRule.type === "secret" ? secretRule.a : randInt(rng, 0, state.prices.length - 1);
+    if (!insight && mask[target]) target = randInt(rng, 0, state.prices.length - 1);
     doSecret(state, seat.id, target);
   }
 

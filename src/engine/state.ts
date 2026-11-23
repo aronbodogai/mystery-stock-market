@@ -1,7 +1,17 @@
-import { MAX_GROUP, NUM_STOCKS, REVEAL_ROUNDS, SECRET_LENGTH } from "./constants";
+import { CLASSIC_STOCKS, MAX_GROUP, REVEAL_ROUNDS, SECRET_LENGTH } from "./constants";
 import type { GameState, Seat, SettleCtx } from "./types";
 
-export const zeros = (): number[] => new Array(NUM_STOCKS).fill(0);
+export const zeros = (n: number = CLASSIC_STOCKS): number[] => new Array(n).fill(0);
+
+/** Number of companies on this game's board. */
+export const boardSize = (state: GameState): number => state.prices.length;
+
+const ALL_COMPANIES = Array.from({ length: CLASSIC_STOCKS }, (_, i) => i);
+
+/** companies[slot] = index into STOCK_IDS (older saved games: the show's 7 in order). */
+export function companiesOf(state: GameState): number[] {
+  return state.companies ? state.companies.slice() : ALL_COMPANIES.slice();
+}
 
 /** Highest rule group that is public during `round`. */
 export function revealLevel(round: number): number {
@@ -30,7 +40,7 @@ export function isHidden(state: GameState, stock: number, round: number = state.
 
 export function hiddenMask(state: GameState, round: number = state.round): boolean[] {
   const out: boolean[] = [];
-  for (let i = 0; i < NUM_STOCKS; i++) out.push(isHidden(state, i, round));
+  for (let i = 0; i < boardSize(state); i++) out.push(isHidden(state, i, round));
   return out;
 }
 
@@ -42,7 +52,7 @@ export function anySecretActive(state: GameState): boolean {
 
 export function netWorth(seat: Seat, prices: readonly number[]): number {
   let v = seat.cash;
-  for (let i = 0; i < NUM_STOCKS; i++) v += seat.shares[i]! * prices[i]!;
+  for (let i = 0; i < seat.shares.length; i++) v += seat.shares[i]! * prices[i]!;
   return v;
 }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MAX_ORDER, NUM_STOCKS } from "../engine/constants";
+import { RULE_SETS } from "../engine/types";
 import { LANGS } from "./lang";
 
 /**
@@ -14,7 +15,7 @@ const IdZ = z.string().min(1).max(40);
 const TokenZ = z.string().min(1).max(64);
 
 export const RoomConfigZ = z.object({
-  ruleSet: z.enum(["show", "random"]),
+  ruleSet: z.enum(RULE_SETS),
   // 0 = no limit: the round ends when every player is ready.
   roundSeconds: z.union([z.literal(0), z.literal(60), z.literal(120), z.literal(180), z.literal(300)]),
   endEarly: z.boolean(),
@@ -154,7 +155,9 @@ export type ResultRow = z.infer<typeof ResultRowZ>;
 
 export const ResultsZ = z.object({
   seed: z.string(),
-  ruleSet: z.enum(["show", "random"]),
+  ruleSet: z.enum(RULE_SETS),
+  /** companies[slot] = index into STOCK_IDS. */
+  companies: z.array(z.number()),
   ruleTypes: z.array(z.string()),
   rules: z.array(z.array(z.object({ g: z.number(), text: z.string() }))),
   history: z.array(z.array(z.number())),
@@ -182,6 +185,8 @@ export const ViewZ = z.object({
   nextReveal: z.number().nullable(),
   /** Normalized logo shape (0..1). The logo rule hides in plain sight. */
   logo: z.array(z.number()),
+  /** Companies on the board, by slot (index into STOCK_IDS); every per-stock array is indexed by slot. */
+  companies: z.array(z.number()),
   stocks: z.array(StockViewZ),
   me: MeViewZ.nullable(),
   standings: z.array(StandingZ),

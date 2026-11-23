@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { STOCK_IDS } from "../../engine/constants";
+import { CLASSIC_COMPANIES } from "../../engine/rules";
 import { cleanName } from "../../shared/names";
 import { ApiError, createRoom, roomInfo } from "../api";
 import { Nav } from "../components/common";
@@ -147,7 +147,7 @@ export function Home() {
         <section className="stack" style={{ marginTop: 56 }}>
           <h2>{t("home.companies")}</h2>
           <div className="companies">
-            {STOCK_IDS.map((_, i) => (
+            {CLASSIC_COMPANIES.map((i) => (
               <div key={i} className="panel company">
                 <CompanyLogo i={i} size={36} />
                 <span>{stock(i)}</span>

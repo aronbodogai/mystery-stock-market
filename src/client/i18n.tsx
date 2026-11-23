@@ -24,7 +24,10 @@ interface I18n {
   money: (n: number, opts?: MoneyOptions) => string;
   num: (n: number) => string;
   pct: (n: number, sign?: boolean) => string;
+  /** Company name for a board slot. */
   stock: (i: number) => string;
+  /** Company (index into STOCK_IDS) on a board slot; identity outside a game. */
+  company: (slot: number) => number;
   upDown: UpDown;
   setUpDown: (u: UpDown) => void;
   /** Language pinned for this screen (game language / TV): switchers hide themselves. */
@@ -71,8 +74,10 @@ function buildI18n(
   upDown: UpDown,
   setUpDown: (u: UpDown) => void,
   locked = false,
+  companies: readonly number[] | null = null,
 ): I18n {
   const t = (key: MsgKey, params?: Params) => translate(lang, key, params);
+  const company = (slot: number) => companies?.[slot] ?? slot;
   return {
     lang,
     setLang,
@@ -81,7 +86,7 @@ function buildI18n(
     code: (prefix, code, params) => {
       const key = `${prefix}.${code}`;
       const p: Params = { ...params };
-      if (typeof p.stock === "number") p.stock = stockName(p.stock, lang);
+      if (typeof p.stock === "number") p.stock = stockName(company(p.stock), lang);
       if (typeof p.side === "string") p.side = translate(lang, p.side === "buy" ? "trade.bought" : "trade.sold");
       if (typeof p.qty === "number") p.qty = formatNumber(p.qty, lang);
       return hasKey(key) ? translate(lang, key, p) : translate(lang, `${prefix}.unknown` as MsgKey, { code });
@@ -89,21 +94,37 @@ function buildI18n(
     money: (n, opts) => formatMoney(n, lang, opts),
     num: (n) => formatNumber(n, lang),
     pct: (n, sign) => formatPercent(n, lang, sign),
-    stock: (i) => stockName(i, lang),
+    stock: (i) => stockName(company(i), lang),
+    company,
     upDown,
     setUpDown,
     locked,
   };
 }
 
-/** Pins a subtree to one language, ignoring the device setting (the TV is always English). */
-export function FixedLang({ lang, children }: { lang: Lang | null; children: ReactNode }) {
+/**
+ * Pins a subtree to one language, ignoring the device setting (the TV is always English),
+ * and/or to a game's board: `companies[slot]` decides which company name and logo a stock slot shows.
+ */
+export function FixedLang({
+  lang,
+  companies = null,
+  children,
+}: {
+  lang: Lang | null;
+  companies?: readonly number[] | null;
+  children: ReactNode;
+}) {
   const parent = useI18n();
+  const boardKey = companies ? companies.join(",") : "";
   // null = not pinned: pass the device setting through (keeps the tree shape stable, so no remounts).
-  const value = useMemo(
-    () => (lang ? buildI18n(lang, () => undefined, parent.upDown, parent.setUpDown, true) : parent),
-    [lang, parent],
-  );
+  const value = useMemo(() => {
+    if (!lang && !boardKey) return parent;
+    const board = boardKey ? boardKey.split(",").map(Number) : null;
+    return lang
+      ? buildI18n(lang, () => undefined, parent.upDown, parent.setUpDown, true, board)
+      : buildI18n(parent.lang, parent.setLang, parent.upDown, parent.setUpDown, parent.locked, board);
+  }, [lang, parent, boardKey]);
   useEffect(() => {
     if (!lang) return;
     const prev = document.documentElement.lang;

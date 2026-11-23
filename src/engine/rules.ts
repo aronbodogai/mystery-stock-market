@@ -1,4 +1,5 @@
-import { NUM_STOCKS, START_PRICE, TOTAL_ROUNDS } from "./constants";
+import { CLASSIC_STOCKS, START_PRICE, TOTAL_ROUNDS } from "./constants";
+import { BOARDS, dealBoard, isBoard } from "./boards";
 import { pick, randInt, randStep, shuffle, type RngState } from "./rng";
 import { RULE_TYPES, type Rule, type RuleSet, type RuleType } from "./types";
 
@@ -58,7 +59,7 @@ export function randomLogo(rng: RngState): number[] {
 
 function otherStock(rng: RngState, self: number, exclude: number[] = []): number {
   const options: number[] = [];
-  for (let i = 0; i < NUM_STOCKS; i++) if (i !== self && !exclude.includes(i)) options.push(i);
+  for (let i = 0; i < CLASSIC_STOCKS; i++) if (i !== self && !exclude.includes(i)) options.push(i);
   return pick(rng, options);
 }
 
@@ -89,19 +90,38 @@ function randomRule(rng: RngState, type: RuleType, self: number): Rule {
   }
 }
 
-/** Randomized rule set: 7 of the 10 types, given to random companies. */
+/** Randomized rule set: 7 of the 10 types, given to random companies (always the show's 7 companies). */
 export function randomRules(rng: RngState): Rule[] {
-  const types = shuffle(rng, RULE_TYPES).slice(0, NUM_STOCKS);
+  const types = shuffle(rng, RULE_TYPES).slice(0, CLASSIC_STOCKS);
   return types.map((type, i) => randomRule(rng, type, i));
 }
 
-export function makeRules(ruleSet: RuleSet, rng: RngState): { rules: Rule[]; logo: number[] } {
+/** The show's seven companies, in STOCK_IDS order (Show and Random boards). */
+export const CLASSIC_COMPANIES: readonly number[] = Array.from({ length: CLASSIC_STOCKS }, (_, i) => i);
+
+/** Companies on the board for a rule set (known before the game starts). */
+export function companiesFor(ruleSet: RuleSet): number[] {
+  return isBoard(ruleSet) ? BOARDS[ruleSet].companies.slice() : CLASSIC_COMPANIES.slice();
+}
+
+/** Logo path shown before a game starts (only fixed sets have one). */
+export function lobbyLogo(ruleSet: RuleSet): readonly number[] {
+  return ruleSet === "random" ? [] : SHOW_LOGO;
+}
+
+export function makeRules(ruleSet: RuleSet, rng: RngState): { rules: Rule[]; logo: number[]; companies: number[] } {
   if (ruleSet === "show") {
-    return { rules: SHOW_RULES.map((r) => ({ ...r })), logo: SHOW_LOGO.slice() };
+    return { rules: SHOW_RULES.map((r) => ({ ...r })), logo: SHOW_LOGO.slice(), companies: companiesFor(ruleSet) };
+  }
+  if (isBoard(ruleSet)) {
+    const board = BOARDS[ruleSet];
+    // A board may deal its rules to its companies in a new order every game (see dealBoard).
+    const dealt = board.shuffle ? dealBoard(board, rng) : board;
+    return { rules: dealt.rules.map((r) => ({ ...r })), logo: SHOW_LOGO.slice(), companies: dealt.companies.slice() };
   }
   const rules = randomRules(rng);
   const logo = randomLogo(rng);
-  return { rules, logo };
+  return { rules, logo, companies: companiesFor(ruleSet) };
 }
 
 /** Normalized logo shape (0..1, 2 decimals) for drawing. Carries no absolute values. */

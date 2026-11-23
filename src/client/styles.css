@@ -1190,6 +1190,16 @@ label.field {
   gap: 1vw;
   min-height: 0;
 }
+.tvb-board-small {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 0.8fr);
+}
+.tvb-board-small .tvb-brand {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.tvb-board-large {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
 .tvb-card {
   display: flex;
   flex-direction: column;

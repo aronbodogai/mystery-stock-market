@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { STOCK_IDS } from "../../engine/constants";
+import { CLASSIC_COMPANIES } from "../../engine/rules";
 import { SHOW_LOGO, logoShape } from "../../engine/rules";
 import type { Lang } from "../../shared/lang";
 import type { MsgKey } from "../../shared/i18n";
 import type { RuleToken } from "../../shared/protocol";
-import { useI18n } from "../i18n";
+import { FixedLang, useI18n } from "../i18n";
 import { load, save } from "../storage";
 import { CompanyLogo } from "./CompanyLogo";
 import { IconCash, IconCheck, IconPeek } from "./icons";
@@ -72,17 +72,26 @@ const clampVolume = (v: unknown) => (typeof v === "number" && v >= 0 && v <= 1 ?
 
 // ------------------------------------------------------------------ player
 
-export function Explainer({
-  autoPlay = false,
-  loop = false,
-  tv = false,
-}: {
+interface ExplainerProps {
   autoPlay?: boolean;
   /** Start again after the last scene (TV lobby). */
   loop?: boolean;
   /** TV sizing (viewport units) and muted-autoplay fallback. */
   tv?: boolean;
-}) {
+}
+
+/** The explainer always shows the show's seven companies, whatever board a game uses. */
+const ALL_COMPANIES = CLASSIC_COMPANIES;
+
+export function Explainer(props: ExplainerProps) {
+  return (
+    <FixedLang lang={null} companies={ALL_COMPANIES}>
+      <ExplainerPlayer {...props} />
+    </FixedLang>
+  );
+}
+
+function ExplainerPlayer({ autoPlay = false, loop = false, tv = false }: ExplainerProps) {
   const { t, lang } = useI18n();
   const [idx, setIdx] = useState(0);
   const [run, setRun] = useState(0); // bumps on every (re)start of a scene
@@ -443,7 +452,7 @@ function SceneMarket({ p }: { p: number }) {
   return (
     <div className="ex-center" style={{ gap: "var(--ex-gap)" }}>
       <div className="ex-grid">
-        {STOCK_IDS.map((_, i) => (
+        {CLASSIC_COMPANIES.map((i) => (
           <div key={i} className="panel ex-tile ex-pop" style={{ animationDelay: `${i * 90}ms` }}>
             <CompanyLogo i={i} size="2.2em" />
             <span className="ex-tile-name">{stock(i)}</span>
@@ -503,7 +512,7 @@ function SceneSettle({ p }: { p: number }) {
   const moved = step(p, 0.35);
   return (
     <div className="ex-grid">
-      {STOCK_IDS.map((_, i) => {
+      {CLASSIC_COMPANIES.map((i) => {
         const to = SETTLE_TO[i]!;
         return (
           <div key={i} className={`panel ex-tile${moved ? " ex-flash" : ""}`}>

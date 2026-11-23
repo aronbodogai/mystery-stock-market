@@ -109,12 +109,23 @@ export interface RoundStats {
   holdings: number[];
 }
 
-export type RuleSet = "show" | "random";
+/** Hand-made boards with their own companies and rules (see BOARDS in boards.ts). */
+export const BOARD_IDS = ["beginning", "season2", "grand"] as const;
+export type BoardId = (typeof BOARD_IDS)[number];
+
+export const RULE_SETS = ["show", "random", ...BOARD_IDS] as const;
+export type RuleSet = (typeof RULE_SETS)[number];
 
 export interface GameState {
   v: 1;
   seed: string;
   ruleSet: RuleSet;
+  /**
+   * Which companies are on the board: companies[slot] = index into STOCK_IDS.
+   * Every per-stock array (prices, shares, rules…) is indexed by slot.
+   * Missing on games saved before custom boards existed: the show's 7, in order.
+   */
+  companies?: number[];
   rng: RngState;
   rules: Rule[];
   /** Logo path: logo[r] = logo stock price after round r (logo[0] = opening price). */

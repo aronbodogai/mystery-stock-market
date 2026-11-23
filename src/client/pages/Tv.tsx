@@ -237,7 +237,10 @@ function TvTrading({ view, offset, flash }: { view: View; offset: number; flash:
   const early = useRemaining(view.earlyEndAt, offset);
   return (
     <div className="tvb">
-      <div className="tvb-board">
+      {/* 7 companies: 4×2 with the brand as the 8th tile. 4: 2×2 plus a tall brand tile. 9: 5×2 with the brand last. */}
+      <div
+        className={`tvb-board${view.stocks.length <= 4 ? " tvb-board-small" : view.stocks.length > 7 ? " tvb-board-large" : ""}`}
+      >
         {view.stocks.map((_, i) => (
           <TvStock key={i} view={view} i={i} flash={flash} />
         ))}
@@ -367,7 +370,7 @@ function TvRoom({ code, onUnpair }: { code: string; onUnpair: () => void }) {
   const conn = useRoom(code, lang, { display: true });
   // The TV shows the host's game language (English until the room tells us otherwise).
   return (
-    <FixedLang lang={conn.view?.config.lang ?? "en"}>
+    <FixedLang lang={conn.view?.config.lang ?? "en"} companies={conn.view?.companies}>
       <TvRoomBody conn={conn} onUnpair={onUnpair} />
     </FixedLang>
   );

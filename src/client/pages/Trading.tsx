@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NUM_STOCKS, PIECES_LAST_ROUND, PIECE_CASH, START_PIECES, MAX_ORDER } from "../../engine/constants";
+import { PIECES_LAST_ROUND, PIECE_CASH, START_PIECES, MAX_ORDER } from "../../engine/constants";
 import type { ClientMsg, FeedEventView, MeView, StockView, View } from "../../shared/protocol";
 import { CompanyLogo } from "../components/CompanyLogo";
 import { IconCash, IconCheck, IconPeek, IconRules, IconSecret, IconSettings, IconSliders } from "../components/icons";
@@ -291,6 +291,7 @@ function StockCard({
 }
 
 function StockPicker({
+  count,
   title,
   open,
   onClose,
@@ -298,6 +299,8 @@ function StockPicker({
   disabled,
   hint,
 }: {
+  /** Companies on the board. */
+  count: number;
   title: string;
   open: boolean;
   onClose: () => void;
@@ -314,7 +317,7 @@ function StockPicker({
         </p>
       )}
       <div className="stack-sm">
-        {Array.from({ length: NUM_STOCKS }, (_, i) => (
+        {Array.from({ length: count }, (_, i) => (
           <button
             key={i}
             className="btn btn-block"
@@ -396,6 +399,7 @@ function Desk({ view, me, send }: { view: View; me: MeView; send: Send }) {
       {view.round > PIECES_LAST_ROUND && <span className="caption">{t("desk.piecesClosed")}</span>}
 
       <StockPicker
+        count={view.stocks.length}
         title={t("desk.placeSecret")}
         hint={t("desk.secretHint")}
         open={pick === "secret"}
@@ -403,6 +407,7 @@ function Desk({ view, me, send }: { view: View; me: MeView; send: Send }) {
         onPick={(i) => setConfirmSecret(i)}
       />
       <StockPicker
+        count={view.stocks.length}
         title={t("desk.peek")}
         hint={t("desk.peekHint")}
         open={pick === "peek"}

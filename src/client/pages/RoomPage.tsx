@@ -151,7 +151,7 @@ export function RoomPage() {
   // Once the game starts, the whole room screen uses the host's game language and the switchers hide.
   const gameLang = conn.view && conn.view.phase !== "lobby" ? conn.view.config.lang : null;
   return (
-    <FixedLang lang={gameLang}>
+    <FixedLang lang={gameLang} companies={conn.view?.companies}>
       <RoomScreen code={code} conn={conn} />
     </FixedLang>
   );

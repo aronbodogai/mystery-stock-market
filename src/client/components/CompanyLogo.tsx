@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { STOCK_IDS, type StockId } from "../../engine/constants";
+import { useI18n } from "../i18n";
 
 /**
  * Each company's brand colours: `co` for the mark and its tinted tile, `co2` for one
@@ -14,6 +15,8 @@ export const COMPANY_COLORS: Record<StockId, { co: string; co2: string }> = {
   airtight: { co: "#0891B2", co2: "#67E8F9" }, // cyan house, sealed porthole
   seasoned: { co: "#65A30D", co2: "#CA8A04" }, // green leaf, gold coin
   alt: { co: "#C026D3", co2: "#F472B6" }, // fuchsia showbiz
+  tidal: { co: "#0E7490", co2: "#FBBF24" }, // deep sea wave, sun
+  halo: { co: "#DB2777", co2: "#FDE68A" }, // pink capsule, pale halo
 };
 
 /**
@@ -80,6 +83,22 @@ const MARKS: Record<StockId, ReactNode> = {
       <circle className="acc-fill" cx="12" cy="14" r="1.4" stroke="none" />
     </>
   ),
+  // Tidal Energy: two waves under a rising sun.
+  tidal: (
+    <>
+      <circle className="acc" cx="16.5" cy="7" r="3" />
+      <path d="M3 14c2 0 2-1.6 4-1.6s2 1.6 4 1.6 2-1.6 4-1.6 2 1.6 4 1.6" />
+      <path d="M3 18.5c2 0 2-1.6 4-1.6s2 1.6 4 1.6 2-1.6 4-1.6 2 1.6 4 1.6" />
+    </>
+  ),
+  // Halo Pharma: a capsule tilted under a halo.
+  halo: (
+    <>
+      <ellipse className="acc" cx="12" cy="4.6" rx="5" ry="1.6" />
+      <rect x="5.6" y="9.4" width="12.8" height="7.6" rx="3.8" transform="rotate(-30 12 13.2)" />
+      <path d="m10.1 9.9 3.8 6.6" />
+    </>
+  ),
 };
 
 /** CSS variables carrying a company's colours (used by the logo tile). */
@@ -89,9 +108,9 @@ export function companyStyle(i: number): CSSProperties {
   return { "--co": c.co, "--co2": c.co2 } as CSSProperties;
 }
 
-/** Bare glyph, for inline use. */
+/** Bare glyph, for inline use. `i` is a board slot (the company itself outside a game). */
 export function CompanyGlyph({ i, size = 24, strokeWidth = 1.7 }: { i: number; size?: number | string; strokeWidth?: number }) {
-  const id = STOCK_IDS[i];
+  const id = STOCK_IDS[useI18n().company(i)];
   if (!id) return null;
   return (
     <svg
@@ -114,8 +133,9 @@ export function CompanyGlyph({ i, size = 24, strokeWidth = 1.7 }: { i: number; s
 /** Glyph on a rounded tile: the company's logo as shown on cards, the TV and results. */
 export function CompanyLogo({ i, size = 36 }: { i: number; size?: number | string }) {
   const s = typeof size === "number" ? `${size}px` : size;
+  const co = useI18n().company(i);
   return (
-    <span className="co-logo" style={{ width: s, height: s, ...companyStyle(i) }} aria-hidden="true">
+    <span className="co-logo" style={{ width: s, height: s, ...companyStyle(co) }} aria-hidden="true">
       <CompanyGlyph i={i} size="62%" />
     </span>
   );

@@ -99,12 +99,16 @@ export interface RenderedToken {
   text: string;
 }
 
-/** Render a rule's tokens in one language. Never sent as-is: projections redact hidden groups. */
-export function renderRule(rule: Rule, self: number, lang: Lang): RenderedToken[] {
-  const params: Record<string, string> = { self: stockName(self, lang) };
+/**
+ * Render a rule's tokens in one language. Never sent as-is: projections redact hidden groups.
+ * `self` and the rule's `a` are board slots; `companies` maps them to companies (default: slot = company).
+ */
+export function renderRule(rule: Rule, self: number, lang: Lang, companies?: readonly number[]): RenderedToken[] {
+  const co = (slot: number) => companies?.[slot] ?? slot;
+  const params: Record<string, string> = { self: stockName(co(self), lang) };
   const r = rule as Record<string, unknown>;
   if (typeof r.a === "number") {
-    const a = stockName(r.a, lang);
+    const a = stockName(co(r.a), lang);
     params.a = a;
     params.theA = lang === "hu" ? huArticle(a) : a;
     params.aSubj = lang === "ko" ? koSubject(a) : a;

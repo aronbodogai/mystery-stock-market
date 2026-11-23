@@ -18,7 +18,8 @@ import { ROUND_SECONDS, type RoundSeconds } from "../../engine/room";
 import { BOT_NAMES, cleanName } from "../../shared/names";
 import type { ClientMsg, View } from "../../shared/protocol";
 import { Nav, Toasts } from "../components/common";
-import { useI18n } from "../i18n";
+import { RuleSetSelect } from "../components/RuleSetSelect";
+import { FixedLang, useI18n } from "../i18n";
 import type { Settled, Toast } from "../useRoom";
 import { ResultsView } from "./Results";
 import { GameBar, Trading } from "./Trading";
@@ -232,13 +233,7 @@ export function SoloPage() {
                   </button>
                 ))}
               </div>
-              <div className="seg" role="group" aria-label={t("set.ruleSet")}>
-                {(["show", "random"] as const).map((s) => (
-                  <button type="button" key={s} aria-pressed={ruleSet === s} onClick={() => setRuleSet(s)}>
-                    {t(s === "show" ? "set.ruleShow" : "set.ruleRandom")}
-                  </button>
-                ))}
-              </div>
+              <RuleSetSelect value={ruleSet} onChange={setRuleSet} />
               <div className="seg" role="group" aria-label={t("set.roundLength")}>
                 {ROUND_SECONDS.map((s) => (
                   <button type="button" key={s} aria-pressed={roundSeconds === s} onClick={() => setRoundSeconds(s)}>
@@ -257,7 +252,7 @@ export function SoloPage() {
 
   const view = solo.view;
   return (
-    <>
+    <FixedLang lang={null} companies={view.companies}>
       {view.phase === "finished" ? (
         <Nav wide logo={view.logo} />
       ) : (
@@ -276,6 +271,6 @@ export function SoloPage() {
         )}
       </main>
       <Toasts toasts={solo.toasts} />
-    </>
+    </FixedLang>
   );
 }
