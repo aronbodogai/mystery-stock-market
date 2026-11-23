@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mystery-stock-market",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-11-23",
+  "upload_source_maps": true,
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/ws/*"]
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOM", "class_name": "Room" },
+      { "name": "TV_PAIRING", "class_name": "TvPairing" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room", "TvPairing"] }],
+  "routes": [{ "pattern": "stocks.aroncreates.com", "custom_domain": true }],
+  "vars": { "PUBLIC_ORIGIN": "https://stocks.aroncreates.com" },
+  "observability": { "enabled": true }
+}

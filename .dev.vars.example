@@ -1,0 +1,2 @@
+# Local dev: empty origin = use the request origin (localhost / LAN IP)
+PUBLIC_ORIGIN=""

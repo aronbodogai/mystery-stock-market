@@ -1,0 +1,29 @@
+{
+  "note": "Narration MP3s per language: /explainer/<lang>/<scene>.mp3. List a scene here once its file exists. Sound effects live in /explainer/sfx/.",
+  "files": {
+    "en": [
+      "intro",
+      "market",
+      "trade",
+      "settle",
+      "rules",
+      "clues",
+      "secret",
+      "pieces",
+      "ready",
+      "end"
+    ],
+    "hu": [
+      "intro",
+      "market",
+      "trade",
+      "settle",
+      "rules",
+      "clues",
+      "secret",
+      "pieces",
+      "ready",
+      "end"
+    ]
+  }
+}
