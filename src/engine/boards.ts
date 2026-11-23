@@ -93,6 +93,20 @@ export function dealBoard(board: Board, rng: RngState): Board {
 }
 
 export const BOARDS: Record<BoardId, Board> = {
+  // The show's rule set (fan reconstruction of the broadcast). The logo stock
+  // follows SHOW_LOGO, the "M" drawn as the game logo on every screen.
+  show: defineBoard("show", {
+    companies: [OPEN, COYO, LATTER, DEFENSE, AIRTIGHT, SEASONED, ALT],
+    rules: [
+      { type: "secret", a: LATTER, x: 13, y: 1000 },
+      { type: "cmpBuy", a: LATTER, x: 1400, y: 700 },
+      { type: "band", l: 10, h: 30, x: 1500, y: 1000 },
+      { type: "perShare", p: 200 },
+      { type: "follow", a: DEFENSE, x: 10, y: 10 },
+      { type: "breadth", k: 4, x: 20, y: 10 },
+      { type: "logo" },
+    ],
+  }),
   // Four companies and four of the easiest rules to read: a first game.
   beginning: defineBoard("beginning", {
     companies: [OPEN, COYO, LATTER, DEFENSE],
@@ -132,6 +146,9 @@ export const BOARDS: Record<BoardId, Board> = {
     ],
   }),
 };
+
+/** The show's rules, by slot (= company, on the show's board). */
+export const SHOW_RULES: readonly Rule[] = BOARDS.show.rules;
 
 export function isBoard(ruleSet: RuleSet): ruleSet is BoardId {
   return ruleSet in BOARDS;

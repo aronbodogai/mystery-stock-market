@@ -110,10 +110,11 @@ export interface RoundStats {
 }
 
 /** Hand-made boards with their own companies and rules (see BOARDS in boards.ts). */
-export const BOARD_IDS = ["beginning", "season2", "grand"] as const;
+export const BOARD_IDS = ["show", "beginning", "season2", "grand"] as const;
 export type BoardId = (typeof BOARD_IDS)[number];
 
-export const RULE_SETS = ["show", "random", ...BOARD_IDS] as const;
+/** Picker order: the show's set, randomized, then the other boards. */
+export const RULE_SETS = ["show", "random", "beginning", "season2", "grand"] as const;
 export type RuleSet = (typeof RULE_SETS)[number];
 
 export interface GameState {

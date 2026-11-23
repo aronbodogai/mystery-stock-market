@@ -60,9 +60,9 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 
 ## Hand-made boards (owner's call)
 
-- Besides Show and Random (always the show's 7 companies), the host can pick hand-made boards from `BOARDS` in `src/engine/boards.ts`: **The Beginning** (4 companies), **Season 2** (the show's 7 companies, each with a different rule type than on the show) and **Grand Market** (9 companies: the show's 7 plus two new ones, Tidal Energy and Halo Pharma).
+- Show's rules is itself a board in `BOARDS` (`src/engine/boards.ts`), so it gets the same checks and can be dealt in a new order like the others; games play byte-for-byte as before. Random always uses the show's 7 companies. The other hand-made boards: **The Beginning** (4 companies), **Season 2** (the show's 7 companies, each with a different rule type than on the show) and **Grand Market** (9 companies: the show's 7 plus two new ones, Tidal Energy and Halo Pharma).
 - A game stores `companies[slot]` (index into `STOCK_IDS`); every per-stock array is indexed by slot, and a rule's `a` points at a slot. Show and Random replay exactly as before; games saved without `companies` read as the show's 7.
 - `boardProblems` checks a board (companies vs rules, references, breadth k, one logo stock, no follow loops) and `defineBoard` runs it when the module loads, so a broken board fails every test.
-- `dealBoard` deals a board's rules to its companies in a seeded new order and moves every reference with its target. Tests deal each board 25 ways and play bot games on the deals. A board can opt in with `shuffle: true`; none does yet.
+- `dealBoard` deals a board's rules to its companies in a seeded new order and moves every reference with its target. Tests deal each board (Show's included) 25 ways and play bot games on the deals. A board can opt in with `shuffle: true`; none does yet.
 - To add a board: an id in `BOARD_IDS` (types.ts), a `set.rule<Id>` name in the three catalogs and an entry in `BOARDS`.
 - The client maps slots to company names and logos through `FixedLang companies=…`; the rules explainer and home page always show the show's 7. The TV board uses 2×2 + brand for 4 companies, 4×2 for 7 and 5×2 for 9.

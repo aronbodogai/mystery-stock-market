@@ -3,25 +3,6 @@ import { BOARDS, dealBoard, isBoard } from "./boards";
 import { pick, randInt, randStep, shuffle, type RngState } from "./rng";
 import { RULE_TYPES, type Rule, type RuleSet, type RuleType } from "./types";
 
-// Stock indices, in STOCK_IDS order.
-const LATTER = 2,
-  DEFENSE = 3;
-
-/**
- * The show's rule set (fan reconstruction of the broadcast).
- * Index order: Open Security, CoyoTech, Latter Electronics, Defense Steel,
- * Airtight Construction, Seasoned Financial, Alt Entertainment.
- */
-export const SHOW_RULES: readonly Rule[] = [
-  { type: "secret", a: LATTER, x: 13, y: 1000 },
-  { type: "cmpBuy", a: LATTER, x: 1400, y: 700 },
-  { type: "band", l: 10, h: 30, x: 1500, y: 1000 },
-  { type: "perShare", p: 200 },
-  { type: "follow", a: DEFENSE, x: 10, y: 10 },
-  { type: "breadth", k: 4, x: 20, y: 10 },
-  { type: "logo" },
-];
-
 /**
  * The show-rules logo path: an "M" for Mystery. logo[r] is Alt
  * Entertainment's price after round r. The same shape is drawn as the game
@@ -110,9 +91,6 @@ export function lobbyLogo(ruleSet: RuleSet): readonly number[] {
 }
 
 export function makeRules(ruleSet: RuleSet, rng: RngState): { rules: Rule[]; logo: number[]; companies: number[] } {
-  if (ruleSet === "show") {
-    return { rules: SHOW_RULES.map((r) => ({ ...r })), logo: SHOW_LOGO.slice(), companies: companiesFor(ruleSet) };
-  }
   if (isBoard(ruleSet)) {
     const board = BOARDS[ruleSet];
     // A board may deal its rules to its companies in a new order every game (see dealBoard).
