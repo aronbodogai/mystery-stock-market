@@ -296,15 +296,16 @@ export function Explainer({
     <div className={`ex${tv ? " ex-tv" : ""}${playing ? "" : " ex-paused"}`}>
       <div className="ex-stage" key={`${idx}-${run}`}>
         <Scene id={SCENES[idx]!} p={started ? p : 0} />
+        {/* Inside the stage so it sits in the middle of the picture, not of the whole player. */}
+        {!started && (
+          <button className="ex-bigplay" onClick={() => goTo(0)} aria-label={t("ex.play")}>
+            ▶
+          </button>
+        )}
       </div>
       <p className="ex-caption" aria-live="polite">
         {text}
       </p>
-      {!started && (
-        <button className="ex-bigplay" onClick={() => goTo(0)} aria-label={t("ex.play")}>
-          ▶
-        </button>
-      )}
       {ended && (
         <div className="ex-overlay">
           <span>{t("ex.ended")}</span>

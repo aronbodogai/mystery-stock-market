@@ -1494,8 +1494,11 @@ label.field {
   background: var(--primary);
   color: #fff;
   font-size: 30px;
+  /* The ▶ glyph's weight sits left of its box; nudge it to look centred. */
+  padding: 0 0 0 5px;
   cursor: pointer;
   box-shadow: var(--primary-glow);
+  z-index: 1;
 }
 .ex-overlay {
   position: absolute;
