@@ -1453,6 +1453,17 @@ label.field {
   align-items: center;
   gap: 6px;
 }
+.ex-volume {
+  width: 88px;
+  flex: none;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+@media (max-width: 480px) {
+  .ex-volume {
+    width: 56px;
+  }
+}
 .ex-progress {
   flex: 1;
   display: flex;

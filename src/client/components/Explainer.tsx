@@ -5,6 +5,7 @@ import type { Lang } from "../../shared/lang";
 import type { MsgKey } from "../../shared/i18n";
 import type { RuleToken } from "../../shared/protocol";
 import { useI18n } from "../i18n";
+import { load, save } from "../storage";
 import { CompanyLogo } from "./CompanyLogo";
 import { IconCash, IconCheck, IconPeek } from "./icons";
 import { LogoMark } from "./Logo";
@@ -64,6 +65,10 @@ const STING_LEAD_MS = 1000;
 /** 120 BPM minimal techno bed, looped under the narration. */
 const MUSIC_SRC = "/explainer/sfx/music.mp3";
 const MUSIC_VOLUME = 0.18;
+const STING_VOLUME = 0.7;
+
+const VOLUME_KEY = "msm:exVolume";
+const clampVolume = (v: unknown) => (typeof v === "number" && v >= 0 && v <= 1 ? v : 1);
 
 // ------------------------------------------------------------------ player
 
@@ -89,6 +94,9 @@ export function Explainer({
   const [elapsed, setElapsed] = useState(0);
   const [expected, setExpected] = useState(6000);
   const [files, setFiles] = useState<string[] | null>(null);
+  /** Master volume (0..1) for narration, sting and music; remembered on this device. */
+  const [volume, setVolume] = useState(() => clampVolume(load<number>(VOLUME_KEY, 1)));
+  const volumeRef = useRef(volume);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stingRef = useRef<HTMLAudioElement | null>(null);
@@ -144,6 +152,7 @@ export function Explainer({
       pendingVoice.current = null;
       if (files.includes(scene)) {
         const audio = (audioRef.current ??= new Audio());
+        audio.volume = volumeRef.current;
         audio.src = `/explainer/${lang}/${scene}.mp3`;
         audio.onloadedmetadata = () => setExpected(Math.max(2500, lead + audio.duration * 1000 + 400));
         audio.onended = () => setTimeout(() => (narrationDone.current = true), 700); // short beat before the next scene
@@ -161,6 +170,7 @@ export function Explainer({
       u.voice = voice;
       u.lang = voice.lang;
       u.rate = 1;
+      u.volume = volumeRef.current;
       u.onend = () => setTimeout(() => (narrationDone.current = true), 700);
       // Other speech errors (no audio device, synthesis failed): pace by reading time instead.
       u.onerror = (e) => (e.error === "not-allowed" ? blocked() : (voiced.current = false));
@@ -171,7 +181,7 @@ export function Explainer({
     // Intro: the gameshow sting plays first, the host comes in on its brass hit.
     setExpected(estimate + lead);
     const sting = (stingRef.current ??= new Audio(STING_SRC));
-    sting.volume = 0.7;
+    sting.volume = STING_VOLUME * volumeRef.current;
     sting.currentTime = 0;
     sting.play().catch(blocked);
     pendingVoice.current = startVoice;
@@ -222,7 +232,8 @@ export function Explainer({
       musicRef.current?.pause();
       return;
     }
-    const music = (musicRef.current ??= Object.assign(new Audio(MUSIC_SRC), { loop: true, volume: MUSIC_VOLUME }));
+    const music = (musicRef.current ??= Object.assign(new Audio(MUSIC_SRC), { loop: true }));
+    music.volume = MUSIC_VOLUME * volumeRef.current;
     void music.play().catch(() => undefined);
   }, [started, playing, muted, ended]);
   // Restarting from the first scene restarts the track too.
@@ -256,6 +267,17 @@ export function Explainer({
       if (audioRef.current && !narrationDone.current && !muted) void audioRef.current.play().catch(() => undefined);
       if (typeof speechSynthesis !== "undefined") speechSynthesis.resume();
     }
+  };
+  /** Applies at once to whatever is playing; browser speech picks it up from the next line. */
+  const changeVolume = (v: number) => {
+    const next = clampVolume(v);
+    setVolume(next);
+    volumeRef.current = next;
+    save(VOLUME_KEY, next);
+    if (audioRef.current) audioRef.current.volume = next;
+    if (stingRef.current) stingRef.current.volume = STING_VOLUME * next;
+    if (musicRef.current) musicRef.current.volume = MUSIC_VOLUME * next;
+    if (muted && next > 0) toggleMute(); // dragging the slider up turns sound back on
   };
   const toggleMute = () => {
     const next = !muted;
@@ -349,6 +371,17 @@ export function Explainer({
           >
             {muted ? "🔇" : "🔊"}
           </button>
+          <input
+            type="range"
+            className="ex-volume"
+            min={0}
+            max={1}
+            step={0.05}
+            value={muted ? 0 : volume}
+            onChange={(e) => changeVolume(Number(e.target.value))}
+            aria-label={t("ex.volume")}
+            title={`${t("ex.volume")}: ${Math.round((muted ? 0 : volume) * 100)}%`}
+          />
         </div>
       )}
       {tv && (
