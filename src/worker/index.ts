@@ -4,7 +4,6 @@ import { PAIR_TTL_MS } from "./tvPairing";
 import { allow } from "./limiter";
 import { isRoomCode, json, newPairCode, newRoomCode } from "./util";
 
-export { Limiter } from "./limiter";
 export { Room } from "./room";
 export { TvPairing } from "./tvPairing";
 

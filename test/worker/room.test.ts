@@ -391,7 +391,7 @@ describe("Room Durable Object", () => {
         headers: { "CF-Connecting-IP": ip },
         body: JSON.stringify({ name: "Spam", lang: "en" }),
       });
-    for (let i = 0; i < 10; i++) expect((await post("203.0.113.9")).status).toBe(200);
+    for (let i = 0; i < 5; i++) expect((await post("203.0.113.9")).status).toBe(200);
     const blocked = await post("203.0.113.9");
     expect(blocked.status).toBe(429);
     expect(await blocked.json()).toEqual({ error: "rate_limited" });

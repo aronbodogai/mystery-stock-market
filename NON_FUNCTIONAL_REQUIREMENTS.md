@@ -186,7 +186,7 @@ This repository is already in stage 2 (public GitHub repo with CI, deployed to s
 | Met | PERF-6, CAP-3, CAP-5, REL-1, REL-3, REL-4, REL-6, SEC-1, SEC-2, SEC-3, SEC-5, UX-3, UX-5, L10N-1 to 6, MNT-3 to 5, ENV-2 to 4, LIC-1, LIC-3 | Existing code and tests |
 | Met (new) | REL-2 fingerprints, REL-7 fuzzing, MNT-2 engine purity | `test/engine/stability.test.ts` |
 | Met (new) | MNT-1 `noUncheckedIndexedAccess`, ENV-1 Node pin | `tsconfig.base.json`, `.nvmrc`, `package.json` engines |
-| Met (new) | SEC-7 per-IP limits: 10 rooms/hour, 20 TV codes/hour, 120 connections/minute; idle lobbies close after 30 minutes | `src/worker/limiter.ts`, `src/worker/room.ts` |
+| Met (new) | SEC-7 per-IP limits with Cloudflare's built-in Rate Limiting: 5 rooms, 10 TV codes and 120 connections per minute (one-minute windows, approximate per location); idle lobbies close after 30 minutes | `src/worker/limiter.ts`, `wrangler.jsonc` `ratelimits`, `src/worker/room.ts` |
 | Met (new) | OBS-1 JSON room logs, OBS-2 host game export that replays exactly, OBS-3 client error toasts with a code | `src/worker/room.ts`, `/api/rooms/:code/export`, `ErrorToasts.tsx` |
 | Met (new) | OBS-4 local-only `/api/health` (version and time; it cannot list rooms, since a Worker has no index of Durable Objects) | `src/worker/index.ts` |
 | Met (new) | UX-6 44 px touch targets on touch screens | `styles.css` |
@@ -195,5 +195,5 @@ This repository is already in stage 2 (public GitHub repo with CI, deployed to s
 | Check | PERF-1 to 5, CAP-1, CAP-2, CAP-4, REL-5, UX-1, UX-2, UX-4, ENV-5 | Need a measured run or manual pass |
 | Accepted | SEC-6 and ENV-6 / LIC-5: fonts keep loading from the Fontshare and Google CDNs (owner's call, 2026-11-24), so a game makes those requests and needs internet | No change planned |
 | Gap | Coverage floors (engine 90%, projection 100%) | Needs `@vitest/coverage-v8` |
-| Gap | SEC-7 "at most 3 open rooms per client" (the hourly creation limit covers spam instead); join limit raised from 10 to 120 per minute because a whole party shares one home IP | Owner's call |
+| Changed | SEC-7: per-hour targets became per-minute (the built-in limiter only has 10 s and 60 s windows); no "at most 3 open rooms per client"; joins allowed up to 120 per minute because a whole party shares one home IP | Owner's call, 2026-11-24 |
 | Gap | LIC-2 attribution terms for the ElevenLabs free plan; MCP-1 to 8 (headless access with login); release tags | Stage 2 follow-ups |
