@@ -59,9 +59,12 @@ class Client {
   }
 }
 
-async function createRoom(name = "Host") {
+let ipSeq = 0;
+/** Each test room comes from its own client IP, so the per-IP creation limit never trips other tests. */
+async function createRoom(name = "Host", ip = `10.0.0.${++ipSeq}`) {
   const res = await worker.fetch("https://stocks.test/api/rooms", {
     method: "POST",
+    headers: { "CF-Connecting-IP": ip },
     body: JSON.stringify({ name, lang: "en" }),
   });
   expect(res.status).toBe(200);
@@ -379,5 +382,57 @@ describe("Room Durable Object", () => {
     expect(res.status).toBe(404);
     const ws = await worker.fetch("https://stocks.test/ws/room/ZZZZZ", { headers: { Upgrade: "websocket" } });
     expect(ws.status).toBe(404);
+  });
+
+  it("limits room creation per client IP (NFR-SEC-7)", async () => {
+    const post = (ip: string) =>
+      worker.fetch("https://stocks.test/api/rooms", {
+        method: "POST",
+        headers: { "CF-Connecting-IP": ip },
+        body: JSON.stringify({ name: "Spam", lang: "en" }),
+      });
+    for (let i = 0; i < 5; i++) expect((await post("203.0.113.9")).status).toBe(200);
+    const blocked = await post("203.0.113.9");
+    expect(blocked.status).toBe(429);
+    expect(await blocked.json()).toEqual({ error: "rate_limited" });
+    expect((await post("203.0.113.10")).status).toBe(200); // another client is unaffected
+  });
+
+  it("answers the health check only in local development (NFR-OBS-4)", async () => {
+    const res = await worker.fetch("https://stocks.test/api/health");
+    // A public deployment sets PUBLIC_ORIGIN; local dev (.dev.vars) leaves it empty.
+    if (env.PUBLIC_ORIGIN) {
+      expect(res.status).toBe(404);
+    } else {
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ ok: true });
+    }
+  });
+
+  it("lets the host download a finished game that replays exactly (NFR-OBS-2)", async () => {
+    const room = await createRoom("Ana");
+    const host = await Client.open(`/ws/room/${room.code}`);
+    host.send({ type: "hello", token: room.playerToken, hostToken: room.hostToken, lang: "en" });
+    await host.next("welcome");
+    host.send({ type: "addBot" });
+    await host.view((v) => v.lobby.length === 2);
+    const url = `https://stocks.test/api/rooms/${room.code}/export`;
+    // Not finished yet: nothing to export, so nothing hidden can leak.
+    expect((await worker.fetch(url, { headers: { "x-host-token": room.hostToken } })).status).toBe(400);
+    host.send({ type: "start" });
+    await host.view((v) => v.phase === "countdown");
+    host.send({ type: "endGame" });
+    await host.view((v) => v.phase === "finished");
+
+    expect((await worker.fetch(url, { headers: { "x-host-token": "f".repeat(32) } })).status).toBe(403);
+    const res = await worker.fetch(url, { headers: { "x-host-token": room.hostToken } });
+    expect(res.status).toBe(200);
+    const file = (await res.json()) as { format: string; init: Parameters<typeof replay>[0]; actions: Parameters<typeof replay>[1] };
+    expect(file.format).toBe("msm-game-v1");
+    const replayed = replay(file.init, file.actions);
+    await runInDurableObject(stubFor(room.code), (inst: Room) => {
+      expect(replayed).toEqual((inst as unknown as { room: RoomState }).room.game);
+    });
+    host.close();
   });
 });

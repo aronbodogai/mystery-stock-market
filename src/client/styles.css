@@ -1645,6 +1645,10 @@ label.field {
 /* ---------------------------------------------------------------- site footer */
 
 .site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
   margin-top: 56px;
   padding-top: 20px;
   padding-bottom: 32px;
@@ -1652,4 +1656,31 @@ label.field {
 }
 .site-footer a {
   color: var(--primary);
+}
+
+/* ---------------------------------------------------------------- touch targets (NFR-UX-6) */
+
+/* Fingers, not mice: every control is at least 44 px tall on touch screens. */
+@media (pointer: coarse) {
+  .btn,
+  .btn-sm,
+  .input,
+  .select,
+  .seg button {
+    min-height: 44px;
+  }
+  .icon-btn {
+    min-width: 44px;
+  }
+  /* The thin video progress bar keeps its look; a transparent border makes each segment 44 px tall to tap. */
+  button.ex-seg {
+    height: 44px;
+    border-block: 19px solid transparent;
+    background-clip: padding-box;
+  }
+}
+
+/* The rules pop-up holds the video: give it room on wide screens. */
+.sheet.sheet-rules {
+  max-width: 1040px;
 }
