@@ -1422,21 +1422,15 @@ label.field {
   transform: scale(0.94);
   box-shadow: var(--primary-glow);
 }
-.ex-pip {
-  width: 14px;
-  height: 14px;
-  border-radius: var(--r-pill);
-  background: var(--text);
-  display: inline-block;
-  transition: opacity 300ms ease, transform 300ms ease;
+.ex-piece {
+  display: inline-flex;
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
 }
-.ex-pip-lg {
-  width: 2.2em;
-  height: 2.2em;
-}
-.ex-pip.is-spent {
+.ex-piece.is-spent {
   opacity: 0.18;
-  transform: scale(0.8);
+  transform: scale(0.8) rotate(-30deg);
 }
 .ex-chip-lg {
   font-size: 1em;
@@ -1570,12 +1564,76 @@ label.field {
   --ic-peek: #0d9488;
   --ic-cash: #ca8a04;
   --piece: #ca8a04;
+  /* Piece token (star chip): darker rim, light edge spots, gold inner disc, dark star. */
+  --piece-body: #a16207;
+  --piece-hi: #fde047;
+  --piece-edge: #854d0e;
+  --piece-ink: #713f12;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --ic-secret: #fbbf24;
     --ic-peek: #2dd4bf;
     --ic-cash: #facc15;
-    --piece: #facc15;
+    --piece: #eab308;
+    --piece-body: #ca8a04;
+    --piece-hi: #fef08a;
+    --piece-edge: #a16207;
+    --piece-ink: #422006;
+  }
+}
+
+/* ---------------------------------------------------------------- piece tokens */
+
+.piece-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.piece-token {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+.piece-token.is-empty {
+  filter: none;
+}
+
+/* ---------------------------------------------------------------- lobby: rules button */
+
+.lobby-rules-btn {
+  flex-direction: column;
+  align-self: stretch;
+  height: auto;
+  min-width: 190px;
+  min-height: 148px;
+  padding: 16px 20px;
+  gap: 10px;
+  font-size: 16px;
+  white-space: normal;
+  text-align: center;
+  background: var(--surface);
+}
+.lobby-rules-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lobby-rules-text .small {
+  font-weight: 400;
+}
+@media (max-width: 720px) {
+  /* Phones: its own row under the QR code and room code, short and wide. */
+  .lobby-rules-btn {
+    flex: 1 1 100%;
+    flex-direction: row;
+    min-height: 0;
+    padding: 10px 16px;
+    gap: 12px;
+    text-align: left;
   }
 }

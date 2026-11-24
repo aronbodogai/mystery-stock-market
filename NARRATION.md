@@ -2,7 +2,7 @@
 
 One line per scene. Audio: `public/explainer/<lang>/<scene>.mp3` (ElevenLabs, voice Don `JJCR1UICgHnHljtvu5uF`, model eleven_v4). The captions come from `ex.s1`–`ex.s10` in `src/shared/i18n/<lang>.json` and must match the audio.
 
-Status: EN 1–10 recorded; HU 1–10 recorded; KO none.
+Status: EN 1–10 recorded; HU 1–10 recorded; KO 1–10 recorded.
 
 ## English
 
@@ -30,7 +30,7 @@ Status: EN 1–10 recorded; HU 1–10 recorded; KO none.
 9. **ready**: Végeztél a kereskedéssel? Nyomd meg a Kész gombot. Ha mindenki kész, vagy lejár az idő, a kör véget ér.
 10. **end**: Huszonnégy kör után a legnagyobb vagyonú játékos nyer. Meg tudod fejteni a rejtett szabályokat a riválisaid előtt?
 
-## Korean (draft)
+## Korean
 
 1. **intro**: 미스터리 거래소. 일곱 개의 회사. 규칙은… 아무도 모릅니다.
 2. **market**: 모든 종목은 만 마크에서 시작합니다. 여러분은 부자로 시작합니다. 현금 십만 마크와 피스 세 개.

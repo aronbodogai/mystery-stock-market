@@ -1,5 +1,6 @@
 import type { ClientMsg, Results as ResultsT, View } from "../../shared/protocol";
 import { CompanyLogo } from "../components/CompanyLogo";
+import { PieceToken } from "../components/PieceToken";
 import { Sparkline } from "../components/Sparkline";
 import { useI18n } from "../i18n";
 import { ruleSetLabel } from "../ruleSets";
@@ -48,7 +49,11 @@ export function RankingList({ results }: { results: ResultsT }) {
             <span>{r.name}</span>
             {r.me && <span className="badge">{t("common.you")}</span>}
             {r.bot && <span className="badge">{t("common.bot")}</span>}
-            {r.pieces > 0 && <span className="chip chip-sm">{tp("results.piecesEarned", r.pieces)}</span>}
+            {r.pieces > 0 && (
+              <span className="chip chip-sm">
+                <PieceToken size={14} /> {tp("results.piecesEarned", r.pieces)}
+              </span>
+            )}
             {r.prize && <span className="chip chip-sm chip-active">{t("results.prize")}</span>}
           </div>
           <span className="num">{money(r.net)}</span>

@@ -69,22 +69,31 @@ function Countdown({ view, offset }: { view: View; offset: number }) {
 /**
  * Shown once per room on this device when you enter the lobby: the rules,
  * with a single "I understand" button (no other way to dismiss it).
+ * Reopened later from the lobby's rules button, it also closes with Close,
+ * Escape or a click outside (`onClose`).
  */
-function RulesGate({ onAck }: { onAck: () => void }) {
+function RulesGate({ onAck, onClose }: { onAck: () => void; onClose?: () => void }) {
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     ref.current?.focus();
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // Reopened from the lobby button: Escape closes it too.
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current?.();
+    window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
     };
   }, []);
   return (
-    <div className="backdrop">
+    <div className="backdrop" onClick={onClose}>
       <div
         ref={ref}
+        onClick={(e) => e.stopPropagation()}
         className="sheet stack"
         role="dialog"
         aria-modal="true"
@@ -94,7 +103,14 @@ function RulesGate({ onAck }: { onAck: () => void }) {
       >
         <div className="row-between">
           <span className="overline">{t("rules.overline")}</span>
-          <LangSwitch />
+          <div className="row">
+            <LangSwitch />
+            {onClose && (
+              <button className="btn btn-ghost btn-sm" onClick={onClose}>
+                {t("common.close")}
+              </button>
+            )}
+          </div>
         </div>
         <HowToPlay titleId="rules-title" />
         <button className="btn btn-primary btn-lg btn-block" onClick={onAck}>
@@ -163,6 +179,8 @@ function RoomScreen({ code, conn }: { code: string; conn: ReturnType<typeof useR
   const [prefsOpen, setPrefsOpen] = useState(false);
   const rulesKey = `msm:rulesAck:${code}`;
   const [rulesAck, setRulesAck] = useState(() => load<boolean>(rulesKey, false));
+  /** Rules reopened from the lobby button (closable, unlike the first-visit gate). */
+  const [rulesOpen, setRulesOpen] = useState(false);
   const { view, send } = conn;
 
   if (!/^[A-HJ-NP-Z2-9]{5}$/.test(code)) return <Navigate to="/" replace />;
@@ -242,7 +260,7 @@ function RoomScreen({ code, conn }: { code: string; conn: ReturnType<typeof useR
       <main className="container page room-width" style={{ paddingTop: 20 }}>
         {connBanner}
         {view.phase === "lobby" && view.you.role === "guest" && <JoinForm view={view} send={send} />}
-        {view.phase === "lobby" && view.you.role !== "guest" && <Lobby view={view} send={send} onRules={() => setRulesAck(false)} />}
+        {view.phase === "lobby" && view.you.role !== "guest" && <Lobby view={view} send={send} onRules={() => setRulesOpen(true)} />}
         {view.phase === "countdown" && <Countdown view={view} offset={conn.offset} />}
         {(view.phase === "trading" || view.phase === "paused") && (
           <Trading view={view} send={send} settled={conn.settled} offset={conn.offset} />
@@ -259,12 +277,14 @@ function RoomScreen({ code, conn }: { code: string; conn: ReturnType<typeof useR
         />
       )}
       <Prefs open={prefsOpen} onClose={() => setPrefsOpen(false)} view={view} send={send} />
-      {view.phase === "lobby" && view.you.role !== "guest" && !rulesAck && (
+      {view.phase === "lobby" && view.you.role !== "guest" && (!rulesAck || rulesOpen) && (
         <RulesGate
           onAck={() => {
             save(rulesKey, true);
             setRulesAck(true);
+            setRulesOpen(false);
           }}
+          onClose={rulesAck ? () => setRulesOpen(false) : undefined}
         />
       )}
       <Toasts toasts={conn.toasts} />

@@ -4,6 +4,7 @@ import { LANGS, type Lang } from "../../shared/lang";
 import { useI18n } from "../i18n";
 import type { Toast } from "../useRoom";
 import { LogoMark } from "./Logo";
+import { PieceRow } from "./PieceToken";
 
 const LANG_LABEL: Record<Lang, string> = { en: "EN", hu: "HU", ko: "한" };
 
@@ -153,18 +154,9 @@ export function Delta({ value, align }: { value: number | null; align?: "left" |
   );
 }
 
-export function Pips({ n, of }: { n: number; of: number }) {
-  return (
-    <span className="row" aria-label={`${n}/${of}`} style={{ gap: 4 }}>
-      {Array.from({ length: of }, (_, i) => (
-        <span
-          key={i}
-          className="dot"
-          style={{ background: i < n ? "var(--piece)" : "var(--border)", width: 10, height: 10 }}
-        />
-      ))}
-    </span>
-  );
+/** A player's pieces as gold tokens (see PieceToken). */
+export function Pips({ n, of, size = 16 }: { n: number; of: number; size?: number | string }) {
+  return <PieceRow n={n} of={of} size={size} />;
 }
 
 export function Sheet({

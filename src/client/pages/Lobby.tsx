@@ -3,7 +3,7 @@ import { MAX_SEATS } from "../../engine/constants";
 import { LANGS } from "../../shared/lang";
 import { GAME_MAX_MS, ROUND_SECONDS, type RoundSeconds } from "../../engine/room";
 import type { ClientMsg, View } from "../../shared/protocol";
-import { IconTv } from "../components/icons";
+import { IconRules, IconTv } from "../components/icons";
 import { RuleSetSelect } from "../components/RuleSetSelect";
 import { QR } from "../components/QR";
 import { useI18n } from "../i18n";
@@ -156,13 +156,18 @@ export function Lobby({
                 >
                   {copied ? t("lobby.copied") : t("lobby.copyLink")}
                 </button>
-                {onRules && (
-                  <button className="btn btn-sm" onClick={onRules}>
-                    {t("lobby.rules")}
-                  </button>
-                )}
               </div>
             </div>
+            {/* Big and to the right on wide screens; a full-width, shorter row on phones. */}
+            {onRules && (
+              <button className="btn lobby-rules-btn" onClick={onRules}>
+                <IconRules size={28} />
+                <span className="lobby-rules-text">
+                  <span>{t("lobby.rules")}</span>
+                  <span className="small muted">{t("lobby.rulesHint")}</span>
+                </span>
+              </button>
+            )}
           </div>
         </div>
 

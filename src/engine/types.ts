@@ -10,8 +10,16 @@ export type RuleType =
   | "logo"
   | "sellBuy"
   | "cheapest"
-  | "holdRank";
+  | "holdRank"
+  // Fixed rules: the price ignores what players do.
+  | "steady"
+  | "growth"
+  | "alternate";
 
+/**
+ * The rule types Random draws from. Frozen: adding to it would change every
+ * Random game's rules for a given seed. New rule types go in hand-made boards.
+ */
 export const RULE_TYPES: readonly RuleType[] = [
   "cmpBuy",
   "band",
@@ -27,8 +35,8 @@ export const RULE_TYPES: readonly RuleType[] = [
 
 /**
  * Rule parameters. Amount units:
- * - money (whole marks): x/y on cmpBuy, band, sellBuy; p on perShare; y on secret, cheapest, holdRank
- * - percent (whole %): x/y on follow, breadth; x on secret, cheapest, holdRank
+ * - money (whole marks): x/y on cmpBuy, band, sellBuy, alternate; x on steady; p on perShare; y on secret, cheapest, holdRank
+ * - percent (whole %): x/y on follow, breadth; x on secret, cheapest, holdRank, growth
  * `a` is the index of another stock.
  */
 export type Rule =
@@ -41,7 +49,13 @@ export type Rule =
   | { type: "logo" }
   | { type: "sellBuy"; x: number; y: number }
   | { type: "cheapest"; x: number; y: number }
-  | { type: "holdRank"; x: number; y: number };
+  | { type: "holdRank"; x: number; y: number }
+  /** +x every round. */
+  | { type: "steady"; x: number }
+  /** +x% every round. */
+  | { type: "growth"; x: number }
+  /** +x in odd-numbered rounds, −y in even-numbered rounds. */
+  | { type: "alternate"; x: number; y: number };
 
 export interface SettleCtx {
   /** Round being settled, 1-based. */

@@ -14,6 +14,44 @@ export const SHOW_LOGO: readonly number[] = [
   13300, 14800, 16300, 17800, 19300, 20800, 18800, 16800, 14800, 12800, 10800, 8800,
 ];
 
+/** A logo path through [round, price] knots, straight lines between them, rounded to 100. */
+function pathThrough(knots: readonly (readonly [number, number])[]): number[] {
+  const path: number[] = [];
+  for (let r = 0; r <= TOTAL_ROUNDS; r++) {
+    const k = knots.findIndex(([kr]) => kr >= r);
+    const [r1, v1] = knots[k]!;
+    const [r0, v0] = knots[Math.max(0, k - 1)]!;
+    const v = r1 === r0 ? v1 : v0 + ((v1 - v0) * (r - r0)) / (r1 - r0);
+    path.push(Math.round(v / 100) * 100);
+  }
+  return path;
+}
+
+/**
+ * Logo shapes a board can give its `logo` stock. The shape is also drawn as
+ * the game logo on every screen during that game, so the rule stays in plain
+ * sight whichever icon it is. Every path opens at the start price.
+ */
+export const LOGO_IDS = ["m", "w", "peak", "valley", "bolt", "stairs", "wave"] as const;
+export type LogoId = (typeof LOGO_IDS)[number];
+
+export const LOGOS: Record<LogoId, readonly number[]> = {
+  // The show's "M" (below), kept exactly.
+  m: [] as number[],
+  // An upside-down M: dips twice.
+  w: pathThrough([[0, 10000], [6, 3400], [12, 9400], [18, 3400], [24, 10600]]),
+  // A mountain: climbs to round 12, then gives it all back.
+  peak: pathThrough([[0, 10000], [12, 22000], [24, 9400]]),
+  // A valley: sinks to round 12, then recovers past the start.
+  valley: pathThrough([[0, 10000], [12, 3000], [24, 13000]]),
+  // A lightning bolt (N): up, sharply down, up again.
+  bolt: pathThrough([[0, 10000], [8, 21000], [16, 6000], [24, 19000]]),
+  // A staircase: flat for five rounds, then a jump, four times.
+  stairs: [...Array(TOTAL_ROUNDS + 1).keys()].map((r) => 10000 + Math.floor(r / 6) * 3000),
+  // A wave: two full swings around the start price.
+  wave: [...Array(TOTAL_ROUNDS + 1).keys()].map((r) => Math.round((10000 + 5000 * Math.sin((2 * Math.PI * r) / 12)) / 100) * 100),
+};
+
 /** Random logo path: a few control points joined by straight lines. */
 export function randomLogo(rng: RngState): number[] {
   const knots = [0];
@@ -68,6 +106,13 @@ function randomRule(rng: RngState, type: RuleType, self: number): Rule {
       return { type, x: randInt(rng, 5, 20), y: randStep(rng, 300, 1000, 100) };
     case "holdRank":
       return { type, x: randInt(rng, 5, 15), y: randStep(rng, 300, 1000, 100) };
+    // Not in Random's pool (RULE_TYPES); here so every type has a generator.
+    case "steady":
+      return { type, x: randStep(rng, 200, 600, 50) };
+    case "growth":
+      return { type, x: randInt(rng, 2, 5) };
+    case "alternate":
+      return { type, x: randStep(rng, 800, 1600, 100), y: randStep(rng, 600, 1400, 100) };
   }
 }
 
@@ -87,7 +132,8 @@ export function companiesFor(ruleSet: RuleSet): number[] {
 
 /** Logo path shown before a game starts (only fixed sets have one). */
 export function lobbyLogo(ruleSet: RuleSet): readonly number[] {
-  return ruleSet === "random" ? [] : SHOW_LOGO;
+  if (ruleSet === "random") return [];
+  return isBoard(ruleSet) ? logoPath(BOARDS[ruleSet].logo) : SHOW_LOGO;
 }
 
 export function makeRules(ruleSet: RuleSet, rng: RngState): { rules: Rule[]; logo: number[]; companies: number[] } {
@@ -95,11 +141,16 @@ export function makeRules(ruleSet: RuleSet, rng: RngState): { rules: Rule[]; log
     const board = BOARDS[ruleSet];
     // A board may deal its rules to its companies in a new order every game (see dealBoard).
     const dealt = board.shuffle ? dealBoard(board, rng) : board;
-    return { rules: dealt.rules.map((r) => ({ ...r })), logo: SHOW_LOGO.slice(), companies: dealt.companies.slice() };
+    return { rules: dealt.rules.map((r) => ({ ...r })), logo: logoPath(board.logo).slice(), companies: dealt.companies.slice() };
   }
   const rules = randomRules(rng);
   const logo = randomLogo(rng);
   return { rules, logo, companies: companiesFor(ruleSet) };
+}
+
+/** The price path for a logo shape (the show's "M" by default). */
+export function logoPath(id: LogoId = "m"): readonly number[] {
+  return id === "m" ? SHOW_LOGO : LOGOS[id];
 }
 
 /** Normalized logo shape (0..1, 2 decimals) for drawing. Carries no absolute values. */

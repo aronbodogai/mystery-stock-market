@@ -9,6 +9,7 @@ import { load, save } from "../storage";
 import { CompanyLogo } from "./CompanyLogo";
 import { IconCash, IconCheck, IconPeek } from "./icons";
 import { LogoMark } from "./Logo";
+import { PieceRow, PieceToken } from "./PieceToken";
 import { RuleText } from "./RuleText";
 import { Delta } from "./common";
 
@@ -463,11 +464,7 @@ function SceneMarket({ p }: { p: number }) {
       {step(p, 0.45) && (
         <div className="row ex-rise" style={{ gap: "1.2em" }}>
           <span className="ex-big num">{money(100_000)}</span>
-          <span className="row" style={{ gap: 6 }}>
-            {[0, 1, 2].map((k) => (
-              <span key={k} className="ex-pip" />
-            ))}
-          </span>
+          <PieceRow n={3} of={3} size="1.6em" />
           <span className="muted">{t("desk.pieces")}</span>
         </div>
       )}
@@ -658,12 +655,14 @@ function ScenePieces({ p }: { p: number }) {
   return (
     <div className="ex-center" style={{ gap: "var(--ex-gap)" }}>
       <div className="row" style={{ gap: 14 }}>
-        {[0, 1, 2].map((k) => (
-          <span
-            key={k}
-            className={`ex-pip ex-pip-lg${(k === 0 && cashed) || (k === 1 && peeked) ? " is-spent" : ""}`}
-          />
-        ))}
+        {[0, 1, 2].map((k) => {
+          const spent = (k === 0 && cashed) || (k === 1 && peeked);
+          return (
+            <span key={k} className={`ex-piece${spent ? " is-spent" : ""}`}>
+              <PieceToken size="3.2em" />
+            </span>
+          );
+        })}
       </div>
       <div className="row wrap" style={{ gap: "1.2em", justifyContent: "center" }}>
         {cashed && (

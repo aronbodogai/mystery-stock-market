@@ -66,3 +66,9 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - `dealBoard` deals a board's rules to its companies in a seeded new order and moves every reference with its target. Tests deal each board (Show's included) 25 ways and play bot games on the deals. A board can opt in with `shuffle: true`; none does yet.
 - To add a board: an id in `BOARD_IDS` (types.ts), a `set.rule<Id>` name in the three catalogs and an entry in `BOARDS`.
 - The client maps slots to company names and logos through `FixedLang companies=…`; the rules explainer and home page always show the show's 7. The TV board uses 2×2 + brand for 4 companies, 4×2 for 7 and 5×2 for 9.
+
+## Fixed rules and logo shapes
+
+- Three rule types ignore what players do: `steady` (+x every round), `growth` (+x% every round) and `alternate` (+x in odd rounds, −y in even rounds). They have text in all three languages and work on any board.
+- The follow-the-icon (`logo`) rule can use seven shapes (`LOGOS` in `rules.ts`): the show's M, W, peak, valley, bolt, stairs and wave. A board picks one with `logo: "<id>"` (default M); the game logo on every screen shows that shape during the game.
+- Random's rule pool (`RULE_TYPES`) is frozen at the original ten types, so a seed always gives the same Random game. New types are for hand-made boards.

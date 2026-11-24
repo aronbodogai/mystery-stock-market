@@ -49,6 +49,12 @@ function applyRule(rule: Rule, i: number, ctx: SettleCtx): number {
       const max = Math.max(...ctx.holdings);
       return h > 0 && h === max ? pctChange(p, -rule.x) : p + rule.y;
     }
+    case "steady":
+      return p + rule.x;
+    case "growth":
+      return pctChange(p, rule.x);
+    case "alternate":
+      return ctx.round % 2 === 1 ? p + rule.x : p - rule.y;
     case "follow":
       throw new Error("follow is resolved separately");
   }

@@ -24,6 +24,18 @@
       "pieces",
       "ready",
       "end"
+    ],
+    "ko": [
+      "intro",
+      "market",
+      "trade",
+      "settle",
+      "rules",
+      "clues",
+      "secret",
+      "pieces",
+      "ready",
+      "end"
     ]
   }
 }

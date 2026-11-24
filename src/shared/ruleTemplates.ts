@@ -28,6 +28,9 @@ const EN: Templates = {
   sellBuy: [[0, "If"], [1, "this stock's sell volume"], [2, "beats its buy volume"], [0, "this round:"], [3, "+{x}."], [0, "Otherwise:"], [4, "−{y}."]],
   cheapest: [[0, "If"], [1, "this stock's price"], [2, "is the lowest on the board (ties count)"], [0, "before settlement:"], [3, "+{x}."], [0, "Otherwise:"], [4, "−{y}."]],
   holdRank: [[0, "If"], [1, "this stock's total holdings"], [2, "are the highest on the board (ties count)"], [0, "at the end of the round:"], [3, "−{x}."], [0, "Otherwise:"], [4, "+{y}."]],
+  steady: [[0, "Every round,"], [1, "whatever anyone does,"], [2, "this stock's price"], [3, "rises by a fixed amount:"], [4, "+{x}."]],
+  growth: [[0, "Every round,"], [1, "whatever anyone does,"], [2, "this stock's price"], [3, "grows by a fixed percentage:"], [4, "+{x}."]],
+  alternate: [[0, "The price swings every round."], [1, "Odd-numbered rounds:"], [3, "+{x}."], [2, "Even-numbered rounds:"], [4, "−{y}."]],
 };
 
 const HU: Templates = {
@@ -41,6 +44,9 @@ const HU: Templates = {
   sellBuy: [[0, "Ha"], [1, "ennek a részvénynek az eladási volumene"], [0, "ebben a körben"], [2, "meghaladja a saját vételi volumenét:"], [3, "+{x}."], [0, "Különben:"], [4, "−{y}."]],
   cheapest: [[0, "Ha"], [1, "ennek a részvénynek az ára"], [0, "elszámolás előtt"], [2, "a legalacsonyabb a táblán (holtverseny is számít):"], [3, "+{x}."], [0, "Különben:"], [4, "−{y}."]],
   holdRank: [[0, "Ha"], [1, "ennek a részvénynek az összes állománya"], [0, "a kör végén"], [2, "a legnagyobb a táblán (holtverseny is számít):"], [3, "−{x}."], [0, "Különben:"], [4, "+{y}."]],
+  steady: [[0, "Minden körben,"], [1, "bárki bármit is tesz,"], [2, "ennek a részvénynek az ára"], [3, "fix összeggel emelkedik:"], [4, "+{x}."]],
+  growth: [[0, "Minden körben,"], [1, "bárki bármit is tesz,"], [2, "ennek a részvénynek az ára"], [3, "fix százalékkal nő:"], [4, "+{x}."]],
+  alternate: [[0, "Az árfolyam körről körre kileng."], [1, "Páratlan körökben:"], [3, "+{x}."], [2, "Páros körökben:"], [4, "−{y}."]],
 };
 
 const KO: Templates = {
@@ -54,6 +60,9 @@ const KO: Templates = {
   sellBuy: [[0, "이번 라운드에"], [1, "이 종목의 매도량이"], [2, "자신의 매수량보다 많으면:"], [3, "+{x}."], [0, "아니면:"], [4, "−{y}."]],
   cheapest: [[0, "정산 전"], [1, "이 종목의 주가가"], [2, "보드에서 가장 낮으면(동률 포함):"], [3, "+{x}."], [0, "아니면:"], [4, "−{y}."]],
   holdRank: [[0, "라운드 종료 시"], [1, "이 종목의 총 보유량이"], [2, "보드에서 가장 많으면(동률 포함):"], [3, "−{x}."], [0, "아니면:"], [4, "+{y}."]],
+  steady: [[0, "매 라운드"], [1, "누가 무엇을 하든"], [2, "이 종목의 주가는"], [3, "정해진 금액만큼 오른다:"], [4, "+{x}."]],
+  growth: [[0, "매 라운드"], [1, "누가 무엇을 하든"], [2, "이 종목의 주가는"], [3, "정해진 비율만큼 오른다:"], [4, "+{x}."]],
+  alternate: [[0, "주가는 라운드마다 오르내린다."], [1, "홀수 라운드:"], [3, "+{x}."], [2, "짝수 라운드:"], [4, "−{y}."]],
 };
 
 export const RULE_TEMPLATES: Record<Lang, Templates> = { en: EN, hu: HU, ko: KO };
@@ -86,6 +95,9 @@ const KINDS: Record<RuleType, Partial<Record<"x" | "y" | "p", ParamKind>>> = {
   sellBuy: { x: "money", y: "money" },
   cheapest: { x: "pct", y: "money" },
   holdRank: { x: "pct", y: "money" },
+  steady: { x: "money" },
+  growth: { x: "pct" },
+  alternate: { x: "money", y: "money" },
 };
 
 function fmt(kind: ParamKind | undefined, v: number, lang: Lang): string {

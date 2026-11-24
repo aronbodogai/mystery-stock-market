@@ -1,5 +1,6 @@
 import { NUM_STOCKS } from "./constants";
 import { shuffle, type RngState } from "./rng";
+import type { LogoId } from "./rules";
 import type { BoardId, Rule, RuleSet } from "./types";
 
 /**
@@ -18,6 +19,8 @@ export interface Board {
   rules: Rule[];
   /** Deal the rules to the companies in a new seeded order every game. */
   shuffle?: boolean;
+  /** Shape the `logo` stock follows (and the game logo shows); default the show's "M". */
+  logo?: LogoId;
 }
 
 // Company indices, in STOCK_IDS order.
@@ -49,6 +52,7 @@ export function boardProblems(board: Board): string[] {
     if (r.type === "breadth" && (r.k < 1 || r.k > n - 1)) out.push(`slot ${slot} breadth k=${r.k} needs 1..${n - 1}`);
     if (r.type === "band" && !(r.l >= 1 && r.h > r.l)) out.push(`slot ${slot} band needs 1 <= l < h`);
   });
+  if (board.logo && !board.rules.some((r) => r.type === "logo")) out.push("picks a logo shape but has no logo rule");
   // Every logo stock would draw the same path: one per board.
   if (board.rules.filter((r) => r.type === "logo").length > 1) out.push("more than one logo rule");
   // follow chains must end somewhere; a loop would silently read as "did not rise".
@@ -107,13 +111,14 @@ export const BOARDS: Record<BoardId, Board> = {
       { type: "logo" },
     ],
   }),
-  // Four companies and four of the easiest rules to read: a first game.
+  // Four companies and the easiest rules to read: a first game. Two move on
+  // their own (a steady riser, a swinger); two react to the table.
   beginning: defineBoard("beginning", {
     companies: [OPEN, COYO, LATTER, DEFENSE],
     rules: [
-      { type: "sellBuy", x: 1200, y: 600 },
+      { type: "steady", x: 300 },
       { type: "cmpBuy", a: 0, x: 1400, y: 700 },
-      { type: "band", l: 5, h: 20, x: 1500, y: 1000 },
+      { type: "alternate", x: 1200, y: 900 },
       { type: "follow", a: 1, x: 10, y: 10 },
     ],
   }),
@@ -130,8 +135,10 @@ export const BOARDS: Record<BoardId, Board> = {
       { type: "breadth", k: 4, x: 20, y: 10 },
     ],
   }),
-  // Nine companies: the show's seven plus Tidal Energy and Halo Pharma.
+  // Nine companies: the show's seven plus Tidal Energy and Halo Pharma. Alt
+  // follows the lightning-bolt logo; Halo grows a little every round.
   grand: defineBoard("grand", {
+    logo: "bolt",
     companies: [OPEN, COYO, LATTER, DEFENSE, AIRTIGHT, SEASONED, ALT, TIDAL, HALO],
     rules: [
       { type: "perShare", p: 150 },
@@ -142,7 +149,7 @@ export const BOARDS: Record<BoardId, Board> = {
       { type: "band", l: 10, h: 40, x: 1500, y: 1000 },
       { type: "logo" },
       { type: "breadth", k: 5, x: 18, y: 10 },
-      { type: "sellBuy", x: 1300, y: 700 },
+      { type: "growth", x: 3 },
     ],
   }),
 };
