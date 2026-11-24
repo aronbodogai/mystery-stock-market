@@ -138,9 +138,9 @@ function TvLobby({ view }: { view: View }) {
   const { t } = useI18n();
   const url = `${view.origin}/j/${view.code}`;
   // While people join, the TV plays the rules explainer on a loop (like the host briefing in the show).
+  // No corner brand here: the explainer opens on the logo and the room code is big, so the height goes to them.
   return (
     <Screen>
-      <Brand logo={view.logo} />
       <div
         style={{
           flex: 1,

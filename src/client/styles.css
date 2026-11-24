@@ -1483,6 +1483,10 @@ label.field {
   cursor: pointer;
   background: linear-gradient(90deg, var(--primary) calc(var(--fill, 0) * 100%), var(--border) 0);
 }
+/* On the TV the bar sits under the caption: it must not take the row-filling flex of the controls. */
+.ex-progress-tv {
+  flex: none;
+}
 .ex-progress-tv .ex-seg {
   cursor: default;
   height: 0.6vh;
