@@ -81,3 +81,4 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - Hosts can download a finished game (seed + actions, `msm-game-v1`) for bug reports; only finished games, so nothing hidden leaks.
 - `/api/health` answers only when `PUBLIC_ORIGIN` is empty (local dev).
 - Fonts stay on the Fontshare and Google Fonts CDNs (owner's call): the offline and no-outside-requests targets are accepted as not met.
+- Pull request Previews (`wrangler preview` in Workers Builds) need a `previews` block in `wrangler.jsonc`: an empty `PUBLIC_ORIGIN` so links use the Preview URL, the two Durable Object bindings (each Preview gets its own storage) and separate rate-limit namespaces (2001–2003).
