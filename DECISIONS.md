@@ -72,3 +72,12 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - Three rule types ignore what players do: `steady` (+x every round), `growth` (+x% every round) and `alternate` (+x in odd rounds, −y in even rounds). They have text in all three languages and work on any board.
 - The follow-the-icon (`logo`) rule can use seven shapes (`LOGOS` in `rules.ts`): the show's M, W, peak, valley, bolt, stairs and wave. A board picks one with `logo: "<id>"` (default M); the game logo on every screen shows that shape during the game.
 - Random's rule pool (`RULE_TYPES`) is frozen at the original ten types, so a seed always gives the same Random game. New types are for hand-made boards.
+
+## Non-functional requirements pass (2026-11-24)
+
+- `NON_FUNCTIONAL_REQUIREMENTS.md` lists the targets and, at the end, what this repo meets.
+- Per-IP limits live in a `Limiter` Durable Object keyed by a hash of the IP (the IP itself is never stored): 10 rooms and 20 TV codes per hour, 120 room connections per minute. Joins are not held to 10 per minute because a whole party connects from one home router.
+- Lobbies close after 30 idle minutes (was 2 hours).
+- Hosts can download a finished game (seed + actions, `msm-game-v1`) for bug reports; only finished games, so nothing hidden leaks.
+- `/api/health` answers only when `PUBLIC_ORIGIN` is empty (local dev).
+- Fonts stay on the Fontshare and Google Fonts CDNs (owner's call): the offline and no-outside-requests targets are accepted as not met.

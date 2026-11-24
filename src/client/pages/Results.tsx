@@ -1,9 +1,12 @@
+import { useState } from "react";
 import type { ClientMsg, Results as ResultsT, View } from "../../shared/protocol";
+import { downloadGame } from "../api";
 import { CompanyLogo } from "../components/CompanyLogo";
 import { PieceToken } from "../components/PieceToken";
 import { Sparkline } from "../components/Sparkline";
 import { useI18n } from "../i18n";
 import { ruleSetLabel } from "../ruleSets";
+import { getCreds } from "../storage";
 
 export function Podium({ results, big = false }: { results: ResultsT; big?: boolean }) {
   const { money } = useI18n();
@@ -96,6 +99,9 @@ export function ResultsView({ view, send }: { view: View; send: (m: ClientMsg) =
   const res = view.results;
   if (!res) return null;
   const isHost = view.you.role === "host";
+  // Solo games have no server room and no host token, so no export there.
+  const hostToken = getCreds(view.code).hostToken;
+  const [exportFailed, setExportFailed] = useState(false);
   // PCs: standings on the left, every rule on the right.
   return (
     <div className="two-col">
@@ -111,6 +117,15 @@ export function ResultsView({ view, send }: { view: View; send: (m: ClientMsg) =
         {isHost && (
           <button className="btn btn-primary btn-lg" onClick={() => send({ type: "newGame" })}>
             {t("results.newGame")}
+          </button>
+        )}
+        {isHost && hostToken && (
+          <button
+            className="btn btn-sm"
+            style={{ alignSelf: "flex-start" }}
+            onClick={() => void downloadGame(view.code, hostToken).catch(() => setExportFailed(true))}
+          >
+            {exportFailed ? t("results.exportFailed") : t("results.export")}
           </button>
         )}
       </div>

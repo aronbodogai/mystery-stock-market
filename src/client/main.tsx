@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ErrorToasts } from "./components/ErrorToasts";
 import { I18nProvider } from "./i18n";
 import { Home } from "./pages/Home";
 import { PairPage } from "./pages/Pair";
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <ErrorToasts />
     </I18nProvider>
   </StrictMode>,
 );

@@ -1,10 +1,16 @@
 import { cleanName } from "../shared/names";
 import { CreateRoomReqZ, PairReqZ } from "../shared/protocol";
 import { PAIR_TTL_MS } from "./tvPairing";
+import { allow } from "./limiter";
 import { isRoomCode, json, newPairCode, newRoomCode } from "./util";
 
+export { Limiter } from "./limiter";
 export { Room } from "./room";
 export { TvPairing } from "./tvPairing";
+
+declare const __APP_VERSION__: string | undefined;
+/** Shown by /api/health; set from package.json at build time (falls back in tests). */
+const VERSION = typeof __APP_VERSION__ === "string" ? __APP_VERSION__ : "dev";
 
 /**
  * Best-effort throttle of failed room lookups per IP (slows down code
@@ -75,8 +81,19 @@ export default {
     const path = url.pathname;
     const ip = clientIp(req);
 
-    if (path === "/api/rooms" && req.method === "POST") return createRoom(req, env, url);
-    if (path === "/api/tv" && req.method === "POST") return createTv(env, url);
+    if (path === "/api/rooms" && req.method === "POST") {
+      if (!(await allow(env, ip, "createRoom"))) return json({ error: "rate_limited" }, 429);
+      return createRoom(req, env, url);
+    }
+    if (path === "/api/tv" && req.method === "POST") {
+      if (!(await allow(env, ip, "createTv"))) return json({ error: "rate_limited" }, 429);
+      return createTv(env, url);
+    }
+    // Local development only (no public origin set): a quick check that the Worker is up.
+    if (path === "/api/health" && req.method === "GET") {
+      if (env.PUBLIC_ORIGIN) return json({ error: "not_found" }, 404);
+      return json({ ok: true, version: VERSION, time: Date.now() });
+    }
 
     let m = path.match(/^\/api\/rooms\/([A-Za-z0-9]{5})$/);
     if (m && req.method === "GET") {
@@ -85,6 +102,21 @@ export default {
       const info = isRoomCode(code) ? await env.ROOM.getByName(code).info() : { exists: false, phase: null };
       if (!info.exists) noteFailure(ip);
       return json(info, info.exists ? 200 : 404);
+    }
+
+    m = path.match(/^\/api\/rooms\/([A-Za-z0-9]{5})\/export$/);
+    if (m && req.method === "GET") {
+      const code = m[1]!.toUpperCase();
+      const hostToken = req.headers.get("x-host-token") ?? "";
+      if (!isRoomCode(code) || !hostToken) return json({ error: "bad_request" }, 400);
+      const res = await env.ROOM.getByName(code).exportGame(hostToken);
+      if (!res.ok || !res.file) return json({ error: res.code ?? "bad_request" }, res.code === "not_host" ? 403 : 400);
+      return new Response(res.file, {
+        headers: {
+          "content-type": "application/json",
+          "content-disposition": `attachment; filename="mystery-stock-market-${code}.json"`,
+        },
+      });
     }
 
     m = path.match(/^\/api\/rooms\/([A-Za-z0-9]{5})\/pair$/);
@@ -100,6 +132,7 @@ export default {
     if (m) {
       if (req.headers.get("Upgrade") !== "websocket") return new Response("Expected WebSocket", { status: 426 });
       if (throttled(ip)) return new Response("Too many failed lookups", { status: 429 });
+      if (!(await allow(env, ip, "connect"))) return new Response("Too many connections", { status: 429 });
       const code = m[1]!.toUpperCase();
       if (!isRoomCode(code)) {
         noteFailure(ip);

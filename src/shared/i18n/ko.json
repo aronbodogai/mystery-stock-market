@@ -215,6 +215,8 @@
   "results.piecesEarned_one": "피스 +{n}",
   "results.piecesEarned_other": "피스 +{n}",
   "results.newGame": "같은 멤버로 새 게임",
+  "results.export": "게임 파일 다운로드 (버그 신고용)",
+  "results.exportFailed": "다운로드 실패, 다시 시도하세요",
 
 
   "tv.pairCode": "연결 코드",

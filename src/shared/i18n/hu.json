@@ -215,6 +215,8 @@
   "results.piecesEarned_one": "+{n} zseton",
   "results.piecesEarned_other": "+{n} zseton",
   "results.newGame": "Új játék ugyanezekkel a játékosokkal",
+  "results.export": "Játékfájl letöltése (hibajelentéshez)",
+  "results.exportFailed": "A letöltés nem sikerült, próbáld újra",
 
 
   "tv.pairCode": "Párosítókód",

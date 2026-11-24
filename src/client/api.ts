@@ -46,6 +46,24 @@ export async function pairWithHost(code: string, hostToken: string, pairCode: st
   await post(`/api/rooms/${code}/pair`, { hostToken, pairCode }, (x) => x);
 }
 
+/** Downloads a finished game (seed + actions) as a JSON file; host only. */
+export async function downloadGame(code: string, hostToken: string): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(`/api/rooms/${encodeURIComponent(code)}/export`, { headers: { "x-host-token": hostToken } });
+  } catch {
+    throw new ApiError("network");
+  }
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new ApiError(data.error ?? `http_${res.status}`);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement("a"), { href: url, download: `mystery-stock-market-${code}.json` });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function wsUrl(path: string): string {
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${location.host}${path}`;

@@ -215,6 +215,8 @@
   "results.piecesEarned_one": "+{n} piece",
   "results.piecesEarned_other": "+{n} pieces",
   "results.newGame": "New game with the same players",
+  "results.export": "Download game file (for bug reports)",
+  "results.exportFailed": "Download failed, try again",
 
 
   "tv.pairCode": "Pairing code",

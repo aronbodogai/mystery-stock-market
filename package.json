@@ -13,7 +13,8 @@
     "test:engine": "vitest run --config vitest.config.ts",
     "test:worker": "vitest run --config vitest.workers.config.ts",
     "cf-typegen": "wrangler types src/worker/worker-configuration.d.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test && vite build && npm run test:e2e && node scripts/third-party.mjs --check && node scripts/secret-scan.mjs"
   },
   "dependencies": {
     "qrcode-generator": "^2.0.4",
@@ -35,5 +36,8 @@
     "vite": "^8.3.8",
     "vitest": "^4.1.12",
     "wrangler": "^4.166.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

@@ -168,6 +168,7 @@ export function Home() {
           <strong>{t("home.contactTitle")}</strong> · {t("home.contact")}{" "}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
         </span>
+        <span className="small muted mono">v{__APP_VERSION__}</span>
       </footer>
     </>
   );

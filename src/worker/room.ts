@@ -40,7 +40,8 @@ interface Attachment {
 
 const COUNTDOWN_MS = 5_000;
 const EARLY_END_MS = 3_000;
-const LOBBY_IDLE_MS = 2 * 60 * 60 * 1000;
+/** A lobby nobody touches for this long is closed (NFR-SEC-7: no piles of empty rooms). */
+const LOBBY_IDLE_MS = 30 * 60 * 1000;
 const FINISHED_TTL_MS = 60 * 60 * 1000;
 const RATE_PER_SEC = 20;
 const MAX_SOCKETS = 64;
@@ -98,6 +99,7 @@ export class Room extends DurableObject<Env> {
     );
     await this.save();
     await this.schedule();
+    this.log("create");
     return { hostToken, playerId: hostId, playerToken };
   }
 
@@ -110,6 +112,21 @@ export class Room extends DurableObject<Env> {
     if (!this.room) return { ok: false, code: "not_found" };
     if (!safeEqual(hostToken, this.room.hostToken)) return { ok: false, code: "not_host" };
     return this.pairTv(pairCode);
+  }
+
+  /**
+   * The finished game as a file the host can download (NFR-OBS-2): seed, seats
+   * and every accepted action, enough to replay it exactly in a test. Finished
+   * games only, so it never reveals anything still hidden.
+   */
+  async exportGame(hostToken: string): Promise<{ ok: boolean; code?: string; file?: string }> {
+    const r = this.room;
+    if (!r) return { ok: false, code: "not_found" };
+    if (!safeEqual(hostToken, r.hostToken)) return { ok: false, code: "not_host" };
+    if (r.phase !== "finished" || !r.gameInit) return { ok: false, code: "not_finished" };
+    this.log("export");
+    const file = { format: "msm-game-v1", room: r.code, gameNo: r.gameNo, init: r.gameInit, actions: await this.actionLog() };
+    return { ok: true, file: JSON.stringify(file, null, 2) };
   }
 
   /** Test/debug helper: the persisted action log for the current game. */
@@ -257,6 +274,7 @@ export class Room extends DurableObject<Env> {
   }
 
   private async cleanup(): Promise<void> {
+    this.log("cleanup");
     for (const ws of this.ctx.getWebSockets()) {
       this.err(ws, "room_closed");
       this.close(ws, 4404, "room_closed");
@@ -433,6 +451,7 @@ export class Room extends DurableObject<Env> {
     const player = { id: newId(), name, token: newToken(), bot: false, kicked: false, ready: false, lastSeq: 0 };
     r.players.push(player);
     pushEvent(r, "ev_joined", { name });
+    this.log("join", { seats: seatedPlayers(r).length });
     att.role = "player";
     att.playerId = player.id;
     ws.serializeAttachment(att);
@@ -540,6 +559,7 @@ export class Room extends DurableObject<Env> {
     r.gameEndsAt = Date.now() + GAME_MAX_MS;
     r.finishedAt = null;
     pushEvent(r, "ev_started", { seats: seats.length });
+    this.log("start", { seats: seats.length, ruleSet: init.ruleSet });
     await this.commit();
   }
 
@@ -554,6 +574,7 @@ export class Room extends DurableObject<Env> {
     r.earlyEndAt = null;
     r.pausedRemaining = null;
     pushEvent(r, "ev_settled", { round: res.round }, res.round);
+    this.log("settle", { settled: res.round });
     if (g.finished) {
       this.finish();
     } else {
@@ -577,6 +598,7 @@ export class Room extends DurableObject<Env> {
   }
 
   private finish(): void {
+    this.log("finish");
     const r = this.room!;
     r.phase = "finished";
     r.deadline = r.countdownEnd = r.pausedRemaining = r.earlyEndAt = r.gameEndsAt = null;
@@ -771,7 +793,19 @@ export class Room extends DurableObject<Env> {
   }
 
   private err(ws: WebSocket, code: string, params?: Params): void {
+    this.log("error", { code });
     this.send(ws, { type: "error", code, ...(params ? { params } : {}) });
+  }
+
+  /**
+   * One JSON line per room event (NFR-OBS-1): room code, phase and round only,
+   * never tokens or player names, so logs are safe to share.
+   */
+  private log(ev: string, extra: Record<string, string | number | boolean> = {}): void {
+    const r = this.room;
+    console.log(
+      JSON.stringify({ ev, room: r?.code ?? null, phase: r?.phase ?? null, round: r?.game?.round ?? null, ...extra }),
+    );
   }
 
   private send(ws: WebSocket, msg: ServerMsg): void {
