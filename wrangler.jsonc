@@ -25,7 +25,9 @@
   ],
   "routes": [{ "pattern": "stocks.aroncreates.com", "custom_domain": true }],
   // ACCESS_*: the Cloudflare Access app that guards /mcp (see access.ts and docs/MCP.md). Empty = /mcp refuses every call.
-  "vars": { "PUBLIC_ORIGIN": "https://stocks.aroncreates.com", "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" },
+  "vars": { "PUBLIC_ORIGIN": "https://stocks.aroncreates.com",
+    "ACCESS_TEAM_DOMAIN": "https://peepeepoopoofuk.cloudflareaccess.com",
+    "ACCESS_AUD": "6691f8028036496e2c5db1f5084159a0ab559308fda46fb32a011be27d2d2ff3" },
   // Settings for pull request Previews (`wrangler preview` in Workers Builds). Each Preview gets its own
   // Durable Object storage; an empty origin makes join links and QR codes use the Preview's own URL;
   // the rate limits count separately from production.
