@@ -1,0 +1,49 @@
+<!--
+  Evaluation questions for the Mystery Stock Market MCP server (mcp-builder Phase 4).
+  Rooms are live and short-lived, so only the rules are stable and read-only: every answer
+  follows from msm_get_rules (in any of its languages), often combined across several rules.
+  Run with the mcp-builder evaluation script over HTTP against a local dev server
+  (`npm run dev`, MCP_DEV_LOGIN=1): transport http, URL http://localhost:5173/mcp.
+-->
+<evaluation>
+  <qa_pair>
+    <question>A player keeps all starting cash and cashes in every starting piece. How many marks of cash do they have, as a plain number?</question>
+    <answer>130000</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>At the very first round's prices, what is the largest number of shares of a single stock a player can buy with their starting cash alone?</question>
+    <answer>10</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>In which round number does every stock's rule become completely visible to all players?</question>
+    <answer>20</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>How many rounds of a game come after the last round in which a piece can still be used?</question>
+    <answer>4</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>A stock is hidden by a secret. For how many rounds is it hidden?</question>
+    <answer>2</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>What is the ratio between a stock's opening price and the lowest price any stock can ever reach, as a plain number?</question>
+    <answer>100</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Counting the start of the game, in how many different rounds are more rule words revealed to everyone?</question>
+    <answer>5</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>The Hungarian rules name the made-up currency. What single capital letter is its symbol based on (ignore the script style)?</question>
+    <answer>M</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Two players finish with the same net worth. Per the rules, does the winner have the higher or the lower minimum net worth during the game? Answer one word.</question>
+    <answer>higher</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Within a round, do bots trade before or after the human players? Answer one word.</question>
+    <answer>after</answer>
+  </qa_pair>
+</evaluation>
