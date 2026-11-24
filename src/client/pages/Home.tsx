@@ -10,6 +10,9 @@ import { useI18n } from "../i18n";
 import { setCreds } from "../storage";
 import { HowToPlay } from "./HowToPlay";
 
+/** Where reports about the site go. */
+const CONTACT_EMAIL = "stocks@aroncreates.com";
+
 export function Home() {
   const { t, lang, code: tc, stock } = useI18n();
   const nav = useNavigate();
@@ -160,6 +163,12 @@ export function Home() {
           <HowToPlay />
         </section>
       </main>
+      <footer className="container site-footer">
+        <span className="small muted">
+          <strong>{t("home.contactTitle")}</strong> · {t("home.contact")}{" "}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+        </span>
+      </footer>
     </>
   );
 }
