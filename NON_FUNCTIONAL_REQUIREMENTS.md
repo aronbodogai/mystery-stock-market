@@ -121,7 +121,7 @@ Stage 1 (local development) needs no git, versioning or backup; those start in s
 | Stage | When | Git | Versioning | Backup |
 | --- | --- | --- | --- | --- |
 | 1. Local development | Built and played on one machine and its LAN | Not required | Not required | Not required |
-| 2. Shared or hosted | Code shared with others, or the game deployed for players outside the LAN | A repository with a protected main branch; CI runs the local gate on every change | Version in `package.json`, shown in the app footer, tagged per release | The remote repository is the off-machine copy; a clean clone passes the gate |
+| 2. Shared or hosted | Code shared with others, or the game deployed for players outside the LAN | A repository with a protected main branch; CI runs the local gate on every change | Version in `package.json` and github icon with the repo link, shown in the app footer, tagged per release | The remote repository is the off-machine copy; a clean clone passes the gate |
 
 ## Local environment and portability
 

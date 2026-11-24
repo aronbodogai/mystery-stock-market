@@ -33,7 +33,7 @@ The `/mcp` path is protected by Cloudflare Zero Trust Access with Managed OAuth.
 1. Zero Trust dashboard → **Access controls → Applications → Create new application → Self-hosted** (or **MCP server** if offered).
 2. Name it (e.g. "Mystery Stock Market MCP"). Public hostname: `stocks.aroncreates.com`, path `mcp`. Only this path: the rest of the site must stay public.
 3. Add a policy: **Allow**, include who may play. For anyone with an email address: login method One-time PIN and selector **Everyone**. For a closed group: list their emails.
-4. **Advanced settings → Managed OAuth**: turn on. Save.
+4. **Advanced settings → Managed OAuth**: turn on. Keep **Allow localhost clients** and **Allow loopback clients** on (MCP Inspector, Claude Code and other local clients). Under **Allowed redirect URIs** add `https://claude.ai/api/mcp/auth_callback` and `https://claude.com/api/mcp/auth_callback`, or Claude Desktop and claude.ai connectors fail with "redirect_uri is not allowed by the account configuration". Save; it takes about a minute to apply.
 5. Copy the **Application Audience (AUD) tag** from the application's overview, and your Zero Trust team name (in the Zero Trust settings), which gives the team domain `https://<team>.cloudflareaccess.com`.
 6. Put both in `wrangler.jsonc` under `vars` (they are not secrets): `"ACCESS_TEAM_DOMAIN": "https://<team>.cloudflareaccess.com"`, `"ACCESS_AUD": "<aud tag>"`. Merge to deploy.
 
