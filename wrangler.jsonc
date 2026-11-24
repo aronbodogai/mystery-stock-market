@@ -3,8 +3,6 @@
   "name": "mystery-stock-market",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-11-23",
-  // The MCP handler (agents SDK) uses AsyncLocalStorage.
-  "compatibility_flags": ["nodejs_compat"],
   "upload_source_maps": true,
   "assets": {
     "not_found_handling": "single-page-application",
