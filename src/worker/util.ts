@@ -38,9 +38,9 @@ export function safeEqual(a: string | undefined | null, b: string | undefined | 
   return diff === 0;
 }
 
-export function json(data: unknown, status = 200): Response {
+export function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...extraHeaders },
   });
 }

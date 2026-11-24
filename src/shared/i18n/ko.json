@@ -20,6 +20,7 @@
   "lang.ko": "한국어",
 
   "common.bot": "봇",
+  "common.agent": "AI 에이전트",
   "common.host": "호스트",
   "common.you": "나",
   "common.frozen": "동결",
@@ -96,7 +97,9 @@
   "ev.ev_time_limit": "{hours}시간 제한에 도달해 게임이 끝났습니다.",
   "set.endEarly": "모두 준비되면 라운드를 일찍 종료",
   "set.endEarlyShort": "모두 준비 시 조기 종료",
+  "set.agentsOffShort": "AI 에이전트 불가",
   "set.hostPlays": "나도 플레이",
+  "set.agents": "AI 에이전트 참가 허용",
   "set.bots_one": "봇 {n}개",
   "set.bots_other": "봇 {n}개",
   "set.botSkill": "봇 난이도",
@@ -320,6 +323,7 @@
   "err.pieces_closed": "이제 피스를 쓸 수 없습니다.",
   "err.no_pieces": "남은 피스가 없습니다.",
   "err.rule_fully_visible": "이미 모두 공개된 규칙입니다. 피스는 그대로 남았습니다.",
+  "err.agents_off": "호스트가 이 방에서 AI 에이전트 자리를 껐습니다.",
 
   "toast.unknown": "{code}",
   "toast.trade_ok": "{stock} {qty}주 {side}",

@@ -23,6 +23,7 @@ export const RoomConfigZ = z.object({
   hostPlays: z.boolean(),
   lang: LangZ,
   seed: z.string().max(64),
+  agents: z.boolean(),
 });
 
 // ---------------------------------------------------------------- client -> server
@@ -114,6 +115,7 @@ export const StandingZ = z.object({
   rank: z.number(),
   net: z.number().nullable(),
   bot: z.boolean(),
+  agent: z.boolean(),
   ready: z.boolean(),
   connected: z.boolean(),
   frozen: z.boolean(),
@@ -125,6 +127,7 @@ export const LobbyPlayerZ = z.object({
   id: z.string(),
   name: z.string(),
   bot: z.boolean(),
+  agent: z.boolean(),
   host: z.boolean(),
   connected: z.boolean(),
   seated: z.boolean(),

@@ -479,6 +479,7 @@ export function Standings({ view, big = false }: { view: View; big?: boolean }) 
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</span>
             {s.me && <span className="badge">{t("common.you")}</span>}
             {s.bot && <span className="badge">{t("common.bot")}</span>}
+            {s.agent && <span className="badge">{t("common.agent")}</span>}
             {s.frozen && <span className="badge">{t("common.frozen")}</span>}
             {!s.bot && s.ready && <span className="chip chip-sm chip-success">{t("game.readyMark")}</span>}
             {!s.bot && !s.connected && <span className="dot" title={t("lobby.offline")} />}

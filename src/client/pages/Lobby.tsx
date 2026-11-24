@@ -52,6 +52,7 @@ export function PlayerList({ view, isHost, send }: { view: View; isHost: boolean
             {p.me && <span className="badge">{t("common.you")}</span>}
             {p.host && <span className="badge">{t("common.host")}</span>}
             {p.bot && <span className="badge">{t("common.bot")}</span>}
+            {p.agent && <span className="badge">{t("common.agent")}</span>}
             {!p.seated && <span className="chip chip-sm">{t("lobby.notPlaying")}</span>}
           </div>
           {isHost && !p.host && view.phase === "lobby" && (
@@ -230,6 +231,15 @@ export function Lobby({
             />
             <span>{t("set.hostPlays")}</span>
           </label>
+          <label className="row" style={{ gap: 10 }}>
+            <input
+              type="checkbox"
+              className="check"
+              checked={c.agents}
+              onChange={(e) => set({ agents: e.target.checked })}
+            />
+            <span>{t("set.agents")}</span>
+          </label>
           <div className="row-between wrap">
             <div className="stack-sm">
               <span className="small muted">{tp("set.bots", bots)}</span>
@@ -303,6 +313,7 @@ export function Lobby({
               </span>
             )}
             {c.endEarly && <span className="chip">{t("set.endEarlyShort")}</span>}
+            {!c.agents && <span className="chip">{t("set.agentsOffShort")}</span>}
             <span className="chip">{t("set.gameLangChip", { lang: t(`lang.${c.lang}`) })}</span>
           </div>
         </div>

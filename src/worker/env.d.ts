@@ -8,6 +8,11 @@ declare namespace Cloudflare {
     RL_CONNECT: RateLimit;
     /** Absolute origin for QR / join URLs. Empty = use the request's origin (local dev). */
     PUBLIC_ORIGIN: string;
+    /** Cloudflare Access login for /mcp (see access.ts). Both empty = MCP refused unless MCP_DEV_LOGIN. */
+    ACCESS_TEAM_DOMAIN?: string;
+    ACCESS_AUD?: string;
+    /** "1" in local dev and tests only: MCP without Access. */
+    MCP_DEV_LOGIN?: string;
   }
 }
 interface Env extends Cloudflare.Env {}

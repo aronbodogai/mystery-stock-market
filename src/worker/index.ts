@@ -4,6 +4,9 @@ import { PAIR_TTL_MS } from "./tvPairing";
 import { allow } from "./limiter";
 import { isRoomCode, json, newPairCode, newRoomCode } from "./util";
 
+import { handleMcp } from "./mcp";
+import { AGENT_HEADER } from "./room";
+
 export { Room } from "./room";
 export { TvPairing } from "./tvPairing";
 
@@ -75,10 +78,13 @@ async function createTv(env: Env, url: URL): Promise<Response> {
 }
 
 export default {
-  async fetch(req, env): Promise<Response> {
+  async fetch(req, env, ctx): Promise<Response> {
     const url = new URL(req.url);
     const path = url.pathname;
     const ip = clientIp(req);
+
+    // Headless play for AI agents (NFR-MCP); login through Cloudflare Access, see access.ts.
+    if (path === "/mcp") return handleMcp(req, env, ctx, originOf(env, url));
 
     if (path === "/api/rooms" && req.method === "POST") {
       if (!(await allow(env, ip, "createRoom"))) return json({ error: "rate_limited" }, 429);
@@ -137,7 +143,10 @@ export default {
         noteFailure(ip);
         return new Response("Room not found", { status: 404 });
       }
-      const res = await env.ROOM.getByName(code).fetch(req);
+      // Only the MCP server may mark a socket as an agent's; never trust it from outside.
+      const headers = new Headers(req.headers);
+      headers.delete(AGENT_HEADER);
+      const res = await env.ROOM.getByName(code).fetch(new Request(req, { headers }));
       if (res.status === 404) noteFailure(ip);
       return res;
     }

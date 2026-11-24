@@ -20,6 +20,7 @@
   "lang.ko": "한국어",
 
   "common.bot": "bot",
+  "common.agent": "MI-ügynök",
   "common.host": "házigazda",
   "common.you": "te",
   "common.frozen": "fagyasztva",
@@ -96,7 +97,9 @@
   "ev.ev_time_limit": "Elérte a {hours} órás korlátot, ezért a játék véget ért.",
   "set.endEarly": "A kör érjen véget, ha mindenki kész",
   "set.endEarlyShort": "Korábban zár, ha mindenki kész",
+  "set.agentsOffShort": "MI-ügynökök nélkül",
   "set.hostPlays": "Én is játszom",
+  "set.agents": "MI-ügynökök is csatlakozhatnak",
   "set.bots_one": "{n} bot",
   "set.bots_other": "{n} bot",
   "set.botSkill": "Botok szintje",
@@ -320,6 +323,7 @@
   "err.pieces_closed": "A zsetonok már nem használhatók.",
   "err.no_pieces": "Nincs több zsetonod.",
   "err.rule_fully_visible": "Ez a szabály már teljesen látható — a zsetonod megmaradt.",
+  "err.agents_off": "A házigazda ebben a szobában kikapcsolta az MI-ügynökök helyeit.",
 
   "toast.unknown": "{code}",
   "toast.trade_ok": "{side} {qty} db {stock}",
