@@ -32,6 +32,11 @@ export async function accountKey(subject: string): Promise<string> {
 }
 
 export async function authenticate(req: Request, env: Env): Promise<AuthResult> {
+  // Local dev and tests only (.dev.vars, wrangler.test.jsonc): wins so `npm run dev` works with Access configured.
+  if (env.MCP_DEV_LOGIN === "1") {
+    const name = req.headers.get(DEV_ACCOUNT_HEADER) || "dev";
+    return { ok: true, identity: { account: await accountKey(`dev:${name}`) } };
+  }
   const team = (env.ACCESS_TEAM_DOMAIN ?? "").replace(/\/+$/, "");
   const aud = env.ACCESS_AUD ?? "";
   if (team && aud) {
@@ -40,10 +45,6 @@ export async function authenticate(req: Request, env: Env): Promise<AuthResult> 
     const subject = await verify(jwt, team, aud).catch(() => null);
     if (!subject) return { ok: false, status: 401, error: "invalid_login" };
     return { ok: true, identity: { account: await accountKey(subject) } };
-  }
-  if (env.MCP_DEV_LOGIN === "1") {
-    const name = req.headers.get(DEV_ACCOUNT_HEADER) || "dev";
-    return { ok: true, identity: { account: await accountKey(`dev:${name}`) } };
   }
   return { ok: false, status: 503, error: "login_not_configured" };
 }

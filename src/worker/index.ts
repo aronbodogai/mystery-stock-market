@@ -4,7 +4,7 @@ import { PAIR_TTL_MS } from "./tvPairing";
 import { allow } from "./limiter";
 import { isRoomCode, json, newPairCode, newRoomCode } from "./util";
 
-import { handleMcp } from "./mcp";
+import { handleMcp } from "./mcp/server";
 import { AGENT_HEADER } from "./room";
 
 export { Room } from "./room";
@@ -78,13 +78,13 @@ async function createTv(env: Env, url: URL): Promise<Response> {
 }
 
 export default {
-  async fetch(req, env, ctx): Promise<Response> {
+  async fetch(req, env): Promise<Response> {
     const url = new URL(req.url);
     const path = url.pathname;
     const ip = clientIp(req);
 
     // Headless play for AI agents (NFR-MCP); login through Cloudflare Access, see access.ts.
-    if (path === "/mcp") return handleMcp(req, env, ctx, originOf(env, url));
+    if (path === "/mcp") return handleMcp(req, env, originOf(env, url));
 
     if (path === "/api/rooms" && req.method === "POST") {
       if (!(await allow(env, ip, "createRoom"))) return json({ error: "rate_limited" }, 429);

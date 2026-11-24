@@ -17,9 +17,7 @@
     "check": "npm run typecheck && npm test && vite build && npm run test:e2e && node scripts/third-party.mjs --check && node scripts/secret-scan.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/client": "^2.4.0",
     "@modelcontextprotocol/server": "^2.4.0",
-    "agents": "^0.34.0",
     "qrcode-generator": "^2.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -30,6 +28,7 @@
     "@cloudflare/vite-plugin": "^1.70.1",
     "@cloudflare/vitest-plugin": "^1.9.0",
     "@cloudflare/workers-types": "^5.20261123.1",
+    "@modelcontextprotocol/client": "^2.4.0",
     "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
