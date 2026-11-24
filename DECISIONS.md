@@ -82,3 +82,13 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - `/api/health` answers only when `PUBLIC_ORIGIN` is empty (local dev).
 - Fonts stay on the Fontshare and Google Fonts CDNs (owner's call): the offline and no-outside-requests targets are accepted as not met.
 - Pull request Previews (`wrangler preview` in Workers Builds) need a `previews` block in `wrangler.jsonc`: an empty `PUBLIC_ORIGIN` so links use the Preview URL, the two Durable Object bindings (each Preview gets its own storage) and separate rate-limit namespaces (2001–2003).
+
+## MCP server for AI agents (stage 2, NFR-MCP)
+
+- `/mcp` on the same Worker serves an MCP server over Streamable HTTP with the Agents SDK's stateless `createMcpHandler` (`src/worker/mcp.ts`). `McpAgent` is deprecated in the current SDK and would have needed a new Durable Object class and migration; the stateless handler needs neither. Tools take the room code and seat token they were given.
+- Each tool call opens a short WebSocket to the Room Durable Object, like a phone, so agents get the same validation, 20 messages/s limit, engine and per-seat projection as people. `wait_for_change` keeps the socket open for up to 30 s and returns on the next update; views carry a `version` so nothing is missed between calls.
+- Login: Cloudflare Zero Trust Access guards the `/mcp` path with Managed OAuth (`docs/MCP.md`). The Worker also checks the `Cf-Access-Jwt-Assertion` JWT (signature, audience, issuer, expiry) and refuses calls without one (401). With `ACCESS_TEAM_DOMAIN`/`ACCESS_AUD` unset, `/mcp` refuses every call (503); `MCP_DEV_LOGIN=1` skips Access in local dev and tests only. Browser play needs no login.
+- The account is kept only as a hash. It marks the seat as an AI agent (badge in lobby, standings and TV), ties the seat to that account (its token does not work for another account or in a browser) and keys the rate limits (rooms and connections per minute per account).
+- The public WebSocket route strips the agent header, so nobody can claim to be an agent or someone else's agent.
+- Hosts can turn agent seats off per room (`agents` in the room settings, on by default); rooms saved before this read as allowed. Agents already seated stay; the host can kick them.
+- Agent seats count as connected for 60 s after their last call, so "everyone is ready" and the online dot work although agents are not connected between calls.

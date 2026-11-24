@@ -20,6 +20,7 @@
   "lang.ko": "한국어",
 
   "common.bot": "bot",
+  "common.agent": "AI agent",
   "common.host": "host",
   "common.you": "you",
   "common.frozen": "frozen",
@@ -96,7 +97,9 @@
   "ev.ev_time_limit": "The {hours}-hour limit was reached, so the game ended.",
   "set.endEarly": "End rounds early when everyone is ready",
   "set.endEarlyShort": "Ends early when all ready",
+  "set.agentsOffShort": "No AI agents",
   "set.hostPlays": "I'm playing too",
+  "set.agents": "Allow AI agents to join",
   "set.bots_one": "{n} bot",
   "set.bots_other": "{n} bots",
   "set.botSkill": "Bot skill",
@@ -320,6 +323,7 @@
   "err.pieces_closed": "Pieces can no longer be used.",
   "err.no_pieces": "You have no pieces left.",
   "err.rule_fully_visible": "That rule is already fully visible — your piece was kept.",
+  "err.agents_off": "The host has turned off seats for AI agents in this room.",
 
   "toast.unknown": "{code}",
   "toast.trade_ok": "{side} {qty} × {stock}",

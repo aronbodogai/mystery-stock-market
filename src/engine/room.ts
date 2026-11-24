@@ -18,6 +18,8 @@ export interface RoomConfig {
   lang: Lang;
   /** Optional; empty = random at start. Only the host sees it before the game ends. */
   seed: string;
+  /** AI agents may take seats over MCP (NFR-MCP-7). Rooms saved before agents existed lack it: allowed. */
+  agents: boolean;
 }
 
 export interface RoomPlayer {
@@ -31,6 +33,10 @@ export interface RoomPlayer {
   ready: boolean;
   /** Highest trade seq applied for this seat (idempotency across reconnects). */
   lastSeq: number;
+  /** Seat taken by an AI agent over MCP: a hash of the logged-in account that owns it (NFR-MCP-7/8). */
+  agent?: string;
+  /** Agents connect once per tool call, so they count as connected for a while after their last call. */
+  seenAt?: number;
 }
 
 export interface RoomDisplay {
@@ -97,6 +103,7 @@ export const DEFAULT_CONFIG: RoomConfig = {
   hostPlays: true,
   lang: "en",
   seed: "",
+  agents: true,
 };
 
 /** Players who get a seat when the game starts. */

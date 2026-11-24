@@ -183,6 +183,7 @@ function TvLobby({ view }: { view: View }) {
                 <span className={`dot${p.connected ? " on" : ""}`} />
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
                 {p.bot && <span className="badge">{t("common.bot")}</span>}
+                {p.agent && <span className="badge">{t("common.agent")}</span>}
               </div>
             ))}
           </div>

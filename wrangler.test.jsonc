@@ -4,6 +4,7 @@
   "name": "mystery-stock-market-test",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-11-23",
+  "compatibility_flags": ["nodejs_compat"],
   "durable_objects": {
     "bindings": [
       { "name": "ROOM", "class_name": "Room" },
@@ -17,5 +18,5 @@
     { "name": "RL_CREATE_TV", "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } },
     { "name": "RL_CONNECT", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } }
   ],
-  "vars": { "PUBLIC_ORIGIN": "https://stocks.test" }
+  "vars": { "PUBLIC_ORIGIN": "https://stocks.test", "MCP_DEV_LOGIN": "1" }
 }

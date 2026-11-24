@@ -1,2 +1,4 @@
 # Local dev: empty origin = use the request origin (localhost / LAN IP)
 PUBLIC_ORIGIN=""
+# MCP at /mcp without Cloudflare Access (local only; never set in production)
+MCP_DEV_LOGIN="1"

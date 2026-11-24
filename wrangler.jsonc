@@ -3,10 +3,12 @@
   "name": "mystery-stock-market",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-11-23",
+  // The MCP handler (agents SDK) uses AsyncLocalStorage.
+  "compatibility_flags": ["nodejs_compat"],
   "upload_source_maps": true,
   "assets": {
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/ws/*"]
+    "run_worker_first": ["/api/*", "/ws/*", "/mcp"]
   },
   "durable_objects": {
     "bindings": [
@@ -22,12 +24,15 @@
     { "name": "RL_CONNECT", "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } }
   ],
   "routes": [{ "pattern": "stocks.aroncreates.com", "custom_domain": true }],
-  "vars": { "PUBLIC_ORIGIN": "https://stocks.aroncreates.com" },
+  // ACCESS_*: the Cloudflare Access app that guards /mcp (see access.ts and docs/MCP.md). Empty = /mcp refuses every call.
+  "vars": { "PUBLIC_ORIGIN": "https://stocks.aroncreates.com",
+    "ACCESS_TEAM_DOMAIN": "https://peepeepoopoofuk.cloudflareaccess.com",
+    "ACCESS_AUD": "6691f8028036496e2c5db1f5084159a0ab559308fda46fb32a011be27d2d2ff3" },
   // Settings for pull request Previews (`wrangler preview` in Workers Builds). Each Preview gets its own
   // Durable Object storage; an empty origin makes join links and QR codes use the Preview's own URL;
   // the rate limits count separately from production.
   "previews": {
-    "vars": { "PUBLIC_ORIGIN": "" },
+    "vars": { "PUBLIC_ORIGIN": "", "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" },
     "durable_objects": {
       "bindings": [
         { "name": "ROOM", "class_name": "Room" },

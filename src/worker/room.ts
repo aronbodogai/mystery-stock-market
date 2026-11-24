@@ -36,7 +36,14 @@ interface Attachment {
   playerId: string | null;
   displayId: string | null;
   lang: Lang;
+  /** Set only on sockets the MCP server opens: hash of the logged-in account (see mcp.ts). */
+  agent?: string | null;
 }
+
+/** Header the MCP server uses to mark its sockets. The public WebSocket route strips it. */
+export const AGENT_HEADER = "x-msm-agent";
+/** An agent seat counts as connected this long after its last tool call. */
+const AGENT_PRESENCE_MS = 60_000;
 
 const COUNTDOWN_MS = 5_000;
 const EARLY_END_MS = 3_000;
@@ -64,7 +71,7 @@ export class Room extends DurableObject<Env> {
   // ------------------------------------------------------------------ RPC
 
   /** Create the room. Returns null if this code is already in use. */
-  async init(p: { code: string; origin: string; hostName: string; lang: Lang }) {
+  async init(p: { code: string; origin: string; hostName: string; lang: Lang; agent?: string }) {
     if (this.room) return null;
     const now = Date.now();
     const hostId = newId();
@@ -78,7 +85,18 @@ export class Room extends DurableObject<Env> {
       hostToken,
       hostId,
       config: { ...DEFAULT_CONFIG, lang: p.lang },
-      players: [{ id: hostId, name: p.hostName, token: playerToken, bot: false, kicked: false, ready: false, lastSeq: 0 }],
+      players: [
+        {
+          id: hostId,
+          name: p.hostName,
+          token: playerToken,
+          bot: false,
+          kicked: false,
+          ready: false,
+          lastSeq: 0,
+          ...(p.agent ? { agent: p.agent, seenAt: now } : {}),
+        },
+      ],
       displays: [],
       phase: "lobby",
       countdownEnd: null,
@@ -147,7 +165,8 @@ export class Room extends DurableObject<Env> {
     const pair = new WebSocketPair();
     const [client, server] = [pair[0], pair[1]];
     this.ctx.acceptWebSocket(server);
-    const att: Attachment = { hello: false, role: "guest", playerId: null, displayId: null, lang: this.room.config.lang };
+    const agent = request.headers.get(AGENT_HEADER) || null;
+    const att: Attachment = { hello: false, role: "guest", playerId: null, displayId: null, lang: this.room.config.lang, agent };
     server.serializeAttachment(att);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -172,6 +191,10 @@ export class Room extends DurableObject<Env> {
     if (msg.type === "ping") return this.send(ws, { type: "pong", serverNow: Date.now() });
     if (!att.hello && msg.type !== "hello") return this.err(ws, "hello_first");
     if (HOST_ONLY.has(msg.type) && att.role !== "host") return this.err(ws, "not_host");
+    if (att.agent && att.playerId) {
+      const p = this.room.players.find((x) => x.id === att.playerId);
+      if (p) p.seenAt = Date.now();
+    }
     await this.handle(ws, att, msg);
   }
 
@@ -395,9 +418,13 @@ export class Room extends DurableObject<Env> {
 
   private async hello(ws: WebSocket, msg: Extract<ClientMsg, { type: "hello" }>): Promise<void> {
     const r = this.room!;
-    const player = msg.token ? r.players.find((p) => p.token !== null && safeEqual(p.token, msg.token)) : undefined;
-    const display = !player && msg.token ? r.displays.find((d) => safeEqual(d.token, msg.token)) : undefined;
-    const hostOk = !!msg.hostToken && safeEqual(msg.hostToken, r.hostToken);
+    const agent = this.att(ws).agent ?? null;
+    // An agent's seat works only for the account that took it, and only over MCP (NFR-MCP-8).
+    const ownedBy = (id: string) => (r.players.find((p) => p.id === id)?.agent ?? null) === agent;
+    const found = msg.token ? r.players.find((p) => p.token !== null && safeEqual(p.token, msg.token)) : undefined;
+    const player = found && ownedBy(found.id) ? found : undefined;
+    const display = !found && !agent && msg.token ? r.displays.find((d) => safeEqual(d.token, msg.token)) : undefined;
+    const hostOk = !!msg.hostToken && safeEqual(msg.hostToken, r.hostToken) && ownedBy(r.hostId);
     if (player?.kicked && !hostOk) {
       this.err(ws, "kicked");
       this.close(ws, 4403, "kicked");
@@ -427,8 +454,12 @@ export class Room extends DurableObject<Env> {
         role = "spectator";
       }
     }
-    const att: Attachment = { hello: true, role, playerId, displayId, lang: msg.lang };
+    const att: Attachment = { hello: true, role, playerId, displayId, lang: msg.lang, agent };
     ws.serializeAttachment(att);
+    if (agent && playerId) {
+      const p = r.players.find((x) => x.id === playerId);
+      if (p) p.seenAt = Date.now();
+    }
     this.send(ws, { type: "welcome", role, code: r.code, playerId });
     if (playerId) {
       this.checkEarlyEnd();
@@ -446,9 +477,19 @@ export class Room extends DurableObject<Env> {
     if (att.role !== "guest") return this.err(ws, "already_joined");
     const name = cleanName(rawName);
     if (!name) return this.err(ws, "bad_name");
+    if (att.agent && r.config.agents === false) return this.err(ws, "agents_off");
     if (r.players.some((p) => !p.kicked && sameName(p.name, name))) return this.err(ws, "name_taken");
     if (seatedPlayers(r).length >= MAX_SEATS) return this.err(ws, "room_full");
-    const player = { id: newId(), name, token: newToken(), bot: false, kicked: false, ready: false, lastSeq: 0 };
+    const player = {
+      id: newId(),
+      name,
+      token: newToken(),
+      bot: false,
+      kicked: false,
+      ready: false,
+      lastSeq: 0,
+      ...(att.agent ? { agent: att.agent, seenAt: Date.now() } : {}),
+    };
     r.players.push(player);
     pushEvent(r, "ev_joined", { name });
     this.log("join", { seats: seatedPlayers(r).length });
@@ -712,6 +753,11 @@ export class Room extends DurableObject<Env> {
       if (ws === exclude) continue;
       const a = this.att(ws);
       if (a.hello && a.playerId && (a.role === "player" || a.role === "host")) ids.add(a.playerId);
+    }
+    // Agents connect once per tool call; a recent call keeps their seat "connected".
+    const now = Date.now();
+    for (const p of this.room?.players ?? []) {
+      if (p.agent && p.seenAt !== undefined && now - p.seenAt < AGENT_PRESENCE_MS) ids.add(p.id);
     }
     return ids;
   }
