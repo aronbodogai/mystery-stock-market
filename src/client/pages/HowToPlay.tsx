@@ -2,7 +2,8 @@ import { CURRENCY } from "../../shared/currency";
 import { Explainer } from "../components/Explainer";
 import { useI18n } from "../i18n";
 
-export function HowToPlay({ titleId }: { titleId?: string } = {}) {
+/** `hideTitle`: inside the rules pop-up, which has its own heading line, the big title is left out. */
+export function HowToPlay({ titleId, hideTitle = false }: { titleId?: string; hideTitle?: boolean } = {}) {
   const { t, money } = useI18n();
   const p = {
     symbol: CURRENCY.symbol,
@@ -24,9 +25,11 @@ export function HowToPlay({ titleId }: { titleId?: string } = {}) {
   ];
   return (
     <div className="stack">
-      <h2 id={titleId} style={{ fontSize: 32 }}>
-        {t("how.title")}
-      </h2>
+      {!hideTitle && (
+        <h2 id={titleId} style={{ fontSize: 32 }}>
+          {t("how.title")}
+        </h2>
+      )}
       {/* The video comes first, as wide as the page content, and waits paused; its big play button starts it with sound. */}
       <Explainer />
       <ol className="stack-sm" style={{ margin: 0, paddingLeft: 20, maxWidth: 760 }}>

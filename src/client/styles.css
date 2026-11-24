@@ -1679,3 +1679,8 @@ label.field {
     background-clip: padding-box;
   }
 }
+
+/* The rules pop-up holds the video: give it room on wide screens. */
+.sheet.sheet-rules {
+  max-width: 1040px;
+}

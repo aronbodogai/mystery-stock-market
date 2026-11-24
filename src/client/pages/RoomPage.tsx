@@ -94,10 +94,10 @@ function RulesGate({ onAck, onClose }: { onAck: () => void; onClose?: () => void
       <div
         ref={ref}
         onClick={(e) => e.stopPropagation()}
-        className="sheet stack"
+        className="sheet sheet-rules stack"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="rules-title"
+        aria-label={t("how.title")}
         tabIndex={-1}
         style={{ outline: "none" }}
       >
@@ -112,7 +112,7 @@ function RulesGate({ onAck, onClose }: { onAck: () => void; onClose?: () => void
             )}
           </div>
         </div>
-        <HowToPlay titleId="rules-title" />
+        <HowToPlay hideTitle />
         <button className="btn btn-primary btn-lg btn-block" onClick={onAck}>
           {t("rules.understand")}
         </button>
