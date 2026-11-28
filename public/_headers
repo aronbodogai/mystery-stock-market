@@ -1,0 +1,11 @@
+# Cache rules for static files (NFR-OPS-4). Cloudflare reads this file at deploy and does not serve it.
+# Built JS/CSS have a content hash in their name, so they never change.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Narration and music keep their names when regenerated, so cache them for a day only.
+/explainer/*
+  Cache-Control: public, max-age=86400
+
+/og-image.png
+  Cache-Control: public, max-age=86400

@@ -92,3 +92,12 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - The public WebSocket route strips the agent header, so nobody can claim to be an agent or someone else's agent.
 - Hosts can turn agent seats off per room (`agents` in the room settings, on by default); rooms saved before this read as allowed. Agents already seated stay; the host can kick them.
 - Agent seats count as connected for 60 s after their last call, so "everyone is ready" and the online dot work although agents are not connected between calls.
+
+## Search and link previews (2026-11-28)
+
+- Pages now go through the Worker first (`run_worker_first: ["/*", …]` with the built and `public/` files excluded), and the Worker serves them from the `ASSETS` binding (`src/worker/pages.ts`). This costs one Worker call per page view, not per file, and lets one place add headers: `noindex` on game pages, a real 404 for unknown paths, and the CSP, HSTS and referrer headers. A `_headers` file alone could not tell real routes from the SPA fallback.
+- Only `/` is meant for search engines. Room, join, TV, pairing and solo pages get `X-Robots-Tag: noindex` and stay allowed in `robots.txt`, because a blocked page's `noindex` is never seen.
+- The head tags, JSON-LD and `<noscript>` text in `index.html` are fixed English, not i18n strings: crawlers and chat apps read only the raw file. The app still sets `<html lang>` from the player's language once it runs.
+- The CSP allows inline styles (React style attributes) and the Google Fonts and Fontshare CDNs (the fonts decision of 2026-11-24). It is left off under the Vite dev server (`__DEV_SERVER__`), which injects inline scripts.
+- Plain HTTP on the public host redirects to HTTPS in the Worker; LAN play on an IP stays on HTTP. Turning on "Always Use HTTPS" in the Cloudflare zone does the same for static files too.
+- `og-image.png` is rendered by `scripts/og-image.mjs` with the show's M logo; rerun it after changing the logo or the wording.

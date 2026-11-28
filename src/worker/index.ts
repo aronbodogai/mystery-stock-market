@@ -5,6 +5,7 @@ import { allow } from "./limiter";
 import { isRoomCode, json, newPairCode, newRoomCode } from "./util";
 
 import { handleMcp } from "./mcp/server";
+import { httpsRedirect, servePage } from "./pages";
 import { AGENT_HEADER } from "./room";
 
 export { Room } from "./room";
@@ -13,6 +14,9 @@ export { TvPairing } from "./tvPairing";
 declare const __APP_VERSION__: string | undefined;
 /** Shown by /api/health; set from package.json at build time (falls back in tests). */
 const VERSION = typeof __APP_VERSION__ === "string" ? __APP_VERSION__ : "dev";
+declare const __DEV_SERVER__: boolean | undefined;
+/** True under `vite` (dev server): no CSP, since Vite injects inline scripts. Set in vite.config.ts. */
+const DEV_SERVER = typeof __DEV_SERVER__ === "boolean" ? __DEV_SERVER__ : false;
 
 /**
  * Best-effort throttle of failed room lookups per IP (slows down code
@@ -82,6 +86,14 @@ export default {
     const url = new URL(req.url);
     const path = url.pathname;
     const ip = clientIp(req);
+
+    const toHttps = httpsRedirect(url, env.PUBLIC_ORIGIN ?? "");
+    if (toHttps) return toHttps;
+
+    // Pages and static files (everything outside /api, /ws and /mcp); see pages.ts.
+    if (!path.startsWith("/api/") && !path.startsWith("/ws/") && path !== "/mcp" && env.ASSETS) {
+      return servePage(req, env.ASSETS, DEV_SERVER);
+    }
 
     // Headless play for AI agents (NFR-MCP); login through Cloudflare Access, see access.ts.
     if (path === "/mcp") return handleMcp(req, env, originOf(env, url));
