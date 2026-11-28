@@ -398,15 +398,11 @@ describe("Room Durable Object", () => {
     expect((await post("203.0.113.10")).status).toBe(200); // another client is unaffected
   });
 
-  it("answers the health check only in local development (NFR-OBS-4)", async () => {
+  it("answers the public health check without caching (NFR-OBS-4, NFR-OPS-1)", async () => {
     const res = await worker.fetch("https://stocks.test/api/health");
-    // A public deployment sets PUBLIC_ORIGIN; local dev (.dev.vars) leaves it empty.
-    if (env.PUBLIC_ORIGIN) {
-      expect(res.status).toBe(404);
-    } else {
-      expect(res.status).toBe(200);
-      expect(await res.json()).toMatchObject({ ok: true });
-    }
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(await res.json()).toMatchObject({ ok: true });
   });
 
   it("lets the host download a finished game that replays exactly (NFR-OBS-2)", async () => {
