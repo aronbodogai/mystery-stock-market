@@ -8,7 +8,7 @@ These requirements apply to a real-time multiplayer party game like Mystery Stoc
 
 - **Stack:** Cloudflare Worker + SQLite-backed Durable Objects (WebSocket Hibernation API, alarms), run locally through Vite + `@cloudflare/vite-plugin` (workerd); React SPA; a pure, seeded TypeScript game engine shared by client and server; zod for the wire protocol.
 - **Player counts (functional):** 2–16 seats, spectators and up to 4 TV displays per room come from the functional spec; the requirements below only say how the game must perform at those counts. All devices are on the same local network as the dev machine (phones join by LAN IP or QR code).
-- **Out of scope:** public hosting, custom domains, accounts (until the stage 2 MCP login), payments, analytics.
+- **Out of scope:** accounts (until the stage 2 MCP login), payments, analytics. Public hosting and the custom domain were out of scope in stage 1; the game is now public at stocks.aroncreates.com, so the "Public site" sections below apply from stage 2.
 - Each requirement has an ID (`NFR-<area>-<n>`), a measurable target and how it is checked, so it can be ticked off locally.
 
 ## Performance and latency
@@ -63,6 +63,8 @@ No player may see anything the rules hide from them, even by reading the network
 | NFR-SEC-5 | Secrets on disk | API keys (e.g. ElevenLabs) only in `.dev.vars` or the OS keychain, never in source files | trufflehog filesystem scan in the local gate (and in CI from stage 2) |
 | NFR-SEC-6 | Personal data | Only a display name is collected; no email, no analytics, no third-party trackers | Network tab shows no outside requests during a game |
 | NFR-SEC-7 | Room and seat spam (scripts or agents) | Per client (IP, or agent key from stage 2): ≤ 10 rooms created per hour, ≤ 10 joins per minute, ≤ 3 open rooms hosted at once; empty lobbies close after 30 minutes | Script that creates and joins rooms in a loop gets refused past each limit |
+| NFR-SEC-8 | Transport and browser security (public site) | HTTPS only: plain HTTP on the public host answers 301 to HTTPS; HSTS for one year; every page carries a Content-Security-Policy that allows only this origin plus the two font CDNs, and `frame-ancestors 'self'` | `curl -I` on `http://` and `https://`; Worker unit test; no CSP errors in the console during a game |
+| NFR-SEC-9 | Privacy notice (public site) | A short privacy note on the site says what is stored (display name, game state, logs without names or tokens) and that fonts load from Google Fonts and Fontshare, which see the visitor's IP; or the fonts are self-hosted and the note drops that line | Read the note; network tab matches it |
 
 ## Usability, accessibility and devices
 
@@ -153,6 +155,33 @@ Stage 1 (local, no public endpoint) needs no MCP server. From stage 2, when the 
 
 Accepted risk: one person running several agents in the same game can pool their seats' information and trade together. Agents are labelled and the host can turn agent seats off (NFR-MCP-7); nothing further is required.
 
+## Public site: search and link previews (stage 2)
+
+Invite links get pasted into group chats, so a shared link must look like the game, and only the home page belongs in search results; room pages are throwaway.
+
+| ID | Requirement | Target | How it is checked |
+| --- | --- | --- | --- |
+| NFR-SEO-1 | Crawler files | `/robots.txt` (`text/plain`) and `/sitemap.xml` (XML, home page only) are real files, not the SPA shell; robots blocks `/api/`, `/ws/` and `/mcp` | `curl -I` shows the content type; Worker unit test |
+| NFR-SEO-2 | Index only the home page | Room, join, TV, pairing and solo pages send `X-Robots-Tag: noindex`; any unknown path answers 404 (the SPA shell as body); robots.txt does not block game pages, so crawlers can see the `noindex` | Worker unit test (`test/worker/pages.test.ts`); Search Console coverage report |
+| NFR-SEO-3 | Link previews | Home page has a descriptive `<title>`, meta description, canonical link, Open Graph and Twitter card tags, and a 1200×630 `og-image.png` (made by `scripts/og-image.mjs`) | Paste the link into WhatsApp or Discord; an Open Graph debugger |
+| NFR-SEO-4 | Machine-readable summary | One JSON-LD `VideoGame` block (name, URL, description, players 2–16, languages, free); a `<noscript>` paragraph says what the game is | Rich Results Test passes with no errors |
+| NFR-SEO-5 | Lighthouse | On `/`, mobile: SEO ≥ 95, Best Practices ≥ 90, Accessibility ≥ 90 | Lighthouse run before each release |
+| NFR-SEO-6 | Core Web Vitals (public) | On `/`, mobile 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, INP ≤ 200 ms (the public counterpart of NFR-PERF-3, which is measured on a LAN) | Lighthouse or PageSpeed Insights; Cloudflare Web Analytics if turned on |
+
+Not planned: per-language URLs and `hreflang`. The language is a device setting, not a URL, so crawlers only see English.
+
+## Public site: operations (stage 2)
+
+Once strangers can open the link, the owner must learn about an outage before the next party does.
+
+| ID | Requirement | Target | How it is checked |
+| --- | --- | --- | --- |
+| NFR-OPS-1 | Availability | ≥ 99.5% of minutes per month the home page answers 200 and a room can be created | Outside uptime check (e.g. every 5 minutes) on `/` and `/robots.txt`, alerting the owner |
+| NFR-OPS-2 | Production errors | Workers Observability on (`observability.enabled`); an alert when Worker errors exceed 1% of requests over 10 minutes | Cloudflare notification set up; trigger one with a test error on a Preview |
+| NFR-OPS-3 | Rollback | A bad deploy can be undone in ≤ 5 minutes with `wrangler rollback` (or the dashboard's Deployments tab) without losing room storage | Rehearse once on a Preview |
+| NFR-OPS-4 | Caching | Hashed build files (`/assets/*`) cache for a year, `immutable`; explainer audio and the preview image for a day; HTML revalidates on every load | `curl -I`; `public/_headers` |
+| NFR-OPS-5 | Explainer size | Explainer audio per language ≤ 2 MB in total and every clip ≤ 250 KB (NFR-PERF-5), so a phone on mobile data can afford the rules video | Size check over `public/explainer/` |
+
 ## Observability and diagnostics
 
 When something goes wrong mid-party, the host must find out why from the dev machine in under a minute.
@@ -192,7 +221,9 @@ This repository is already in stage 2 (public GitHub repo with CI, deployed to s
 | Met (new) | UX-6 44 px touch targets on touch screens | `styles.css` |
 | Met (new) | LIC-4 `THIRD_PARTY.md`, generated and checked | `scripts/third-party.mjs` |
 | Met (new) | Testing gate: `npm run check` (typecheck, tests, build, e2e, third-party list, secret scan); version shown in the footer | `package.json`, `vite.config.ts` |
-| Check | PERF-1 to 5, CAP-1, CAP-2, CAP-4, REL-5, UX-1, UX-2, UX-4, ENV-5 | Need a measured run or manual pass |
+| Met (new, 2026-11-28) | SEO-1 robots.txt and sitemap.xml; SEO-2 noindex on game pages and real 404s; SEO-3 title, canonical, Open Graph, Twitter card and preview image; SEO-4 JSON-LD and `<noscript>` text; SEC-8 HTTPS redirect, HSTS and CSP on every page; OPS-4 cache rules | `public/robots.txt`, `public/sitemap.xml`, `public/_headers`, `public/og-image.png`, `index.html`, `src/worker/pages.ts`, `test/worker/pages.test.ts` |
+| Check | PERF-1 to 5, CAP-1, CAP-2, CAP-4, REL-5, UX-1, UX-2, UX-4, ENV-5, SEO-5, SEO-6, OPS-5 | Need a measured run or manual pass |
+| Gap | SEC-9 privacy note; OPS-1 uptime check; OPS-2 error alert; OPS-3 rollback rehearsal | Dashboard or content work, not code in this repo yet |
 | Accepted | SEC-6 and ENV-6 / LIC-5: fonts keep loading from the Fontshare and Google CDNs (owner's call, 2026-11-24), so a game makes those requests and needs internet | No change planned |
 | Gap | Coverage floors (engine 90%, projection 100%) | Needs `@vitest/coverage-v8` |
 | Changed | SEC-7: per-hour targets became per-minute (the built-in limiter only has 10 s and 60 s windows); no "at most 3 open rooms per client"; joins allowed up to 120 per minute because a whole party shares one home IP | Owner's call, 2026-11-24 |

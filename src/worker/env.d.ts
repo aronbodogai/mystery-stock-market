@@ -6,6 +6,8 @@ declare namespace Cloudflare {
     RL_CREATE_ROOM: RateLimit;
     RL_CREATE_TV: RateLimit;
     RL_CONNECT: RateLimit;
+    /** Static files and the SPA shell (wrangler.jsonc `assets`); absent in the Durable Object tests. */
+    ASSETS?: Fetcher;
     /** Absolute origin for QR / join URLs. Empty = use the request's origin (local dev). */
     PUBLIC_ORIGIN: string;
     /** Cloudflare Access login for /mcp (see access.ts). Both empty = MCP refused unless MCP_DEV_LOGIN. */

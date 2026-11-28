@@ -6,8 +6,38 @@
     <meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0B0B0F" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Mystery Stock Market — trade seven mystery stocks with friends. Phones are controllers, the TV is the board." />
-    <title>Mystery Stock Market</title>
+    <title>Mystery Stock Market — a party game of hidden price rules</title>
+    <link rel="canonical" href="https://stocks.aroncreates.com/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Link previews (NFR-SEO-3). Fixed English text on purpose: crawlers see only this file. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mystery Stock Market" />
+    <meta property="og:title" content="Mystery Stock Market" />
+    <meta property="og:description" content="Trade seven mystery stocks with friends. Every price follows a hidden rule — work it out before everyone else." />
+    <meta property="og:url" content="https://stocks.aroncreates.com/" />
+    <meta property="og:image" content="https://stocks.aroncreates.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mystery Stock Market logo and tagline" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Mystery Stock Market",
+        "url": "https://stocks.aroncreates.com/",
+        "description": "A multiplayer party game: trade seven mystery stocks whose prices follow hidden rules. Phones are controllers, the TV is the board.",
+        "genre": ["Party game", "Trading game"],
+        "gamePlatform": "Web browser",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any",
+        "playMode": "MultiPlayer",
+        "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 16 },
+        "inLanguage": ["en", "hu", "ko"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
@@ -19,6 +49,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>Mystery Stock Market</h1>
+      <p>A multiplayer party game for 2–16 players. Seven companies, 24 rounds, and every stock moves by a hidden rule that reveals itself word by word. Phones are the controllers and a TV is the board. Turn on JavaScript to play.</p>
+    </noscript>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
 </html>

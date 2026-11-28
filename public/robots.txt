@@ -1,0 +1,9 @@
+# Game pages (/r/, /j/, /tv, /pair/, /solo) stay crawlable on purpose: the Worker
+# sends them with X-Robots-Tag: noindex, and a crawler only sees that if it may fetch them.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /ws/
+Disallow: /mcp
+
+Sitemap: https://stocks.aroncreates.com/sitemap.xml
