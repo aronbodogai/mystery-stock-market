@@ -14,6 +14,8 @@ export { TvPairing } from "./tvPairing";
 declare const __APP_VERSION__: string | undefined;
 /** Shown by /api/health; set from package.json at build time (falls back in tests). */
 const VERSION = typeof __APP_VERSION__ === "string" ? __APP_VERSION__ : "dev";
+/** The Durable Object /api/health asks. Six letters, so it can never be a real (five-letter) room code. */
+const HEALTH_ROOM = "HEALTH";
 declare const __DEV_SERVER__: boolean | undefined;
 /** True under `vite` (dev server): no CSP, since Vite injects inline scripts. Set in vite.config.ts. */
 const DEV_SERVER = typeof __DEV_SERVER__ === "boolean" ? __DEV_SERVER__ : false;
@@ -106,10 +108,16 @@ export default {
       if (!(await allow(env, ip, "createTv"))) return json({ error: "rate_limited" }, 429);
       return createTv(env, url);
     }
-    // Local development only (no public origin set): a quick check that the Worker is up.
+    // Uptime check for status.aroncreates.com (NFR-OBS-4, NFR-OPS-1): 200 when the Worker can reach a
+    // Room Durable Object, 503 when it can't. Public, no auth, writes nothing, never cached.
     if (path === "/api/health" && req.method === "GET") {
-      if (env.PUBLIC_ORIGIN) return json({ error: "not_found" }, 404);
-      return json({ ok: true, version: VERSION, time: Date.now() });
+      let ok = true;
+      try {
+        await env.ROOM.getByName(HEALTH_ROOM).info();
+      } catch {
+        ok = false;
+      }
+      return json({ ok, version: VERSION, time: Date.now() }, ok ? 200 : 503);
     }
 
     let m = path.match(/^\/api\/rooms\/([A-Za-z0-9]{5})$/);

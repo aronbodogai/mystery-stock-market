@@ -176,7 +176,7 @@ Once strangers can open the link, the owner must learn about an outage before th
 
 | ID | Requirement | Target | How it is checked |
 | --- | --- | --- | --- |
-| NFR-OPS-1 | Availability | ≥ 99.5% of minutes per month the home page answers 200 and a room can be created | Outside uptime check (e.g. every 5 minutes) on `/` and `/robots.txt`, alerting the owner |
+| NFR-OPS-1 | Availability | ≥ 99.5% uptime per month for the website (`/` answers 200) and the game server (`/api/health` answers 200) | Hourly outside check on [status.aroncreates.com](https://status.aroncreates.com) (repo `aronbodogai/status`); the owner follows its Mystery Stock Market RSS feed to hear about outages |
 | NFR-OPS-2 | Production errors | Workers Observability on (`observability.enabled`); an alert when Worker errors exceed 1% of requests over 10 minutes | Cloudflare notification set up; trigger one with a test error on a Preview |
 | NFR-OPS-3 | Rollback | A bad deploy can be undone in ≤ 5 minutes with `wrangler rollback` (or the dashboard's Deployments tab) without losing room storage | Rehearse once on a Preview |
 | NFR-OPS-4 | Caching | Hashed build files (`/assets/*`) cache for a year, `immutable`; explainer audio and the preview image for a day; HTML revalidates on every load | `curl -I`; `public/_headers` |
@@ -191,7 +191,7 @@ When something goes wrong mid-party, the host must find out why from the dev mac
 | NFR-OBS-1 | Structured logs | The Worker logs one JSON line per room event (join, start, settle, error) with room code and round; no tokens or names in logs | Read the dev-server log after a game |
 | NFR-OBS-2 | Replayable bugs | Any finished or broken game can be exported as seed + action log and replayed in a test | Export button for the host; replay test |
 | NFR-OBS-3 | Client errors | Uncaught client errors show a toast with an error code and are logged with the room code | Throw a test error in dev |
-| NFR-OBS-4 | Health view | A local-only `/api/health` lists open rooms, sockets and alarm times | Hit it during a bot game |
+| NFR-OBS-4 | Health endpoint | A public `/api/health` answers 200 when the Worker can reach a Room Durable Object and 503 when it can't; no auth, writes nothing, `cache-control: no-store` | Worker test; the status page checks it hourly |
 
 ## Assets, licensing and third-party services
 
@@ -217,13 +217,14 @@ This repository is already in stage 2 (public GitHub repo with CI, deployed to s
 | Met (new) | MNT-1 `noUncheckedIndexedAccess`, ENV-1 Node pin | `tsconfig.base.json`, `.nvmrc`, `package.json` engines |
 | Met (new) | SEC-7 per-IP limits with Cloudflare's built-in Rate Limiting: 5 rooms, 10 TV codes and 120 connections per minute (one-minute windows, approximate per location); idle lobbies close after 30 minutes | `src/worker/limiter.ts`, `wrangler.jsonc` `ratelimits`, `src/worker/room.ts` |
 | Met (new) | OBS-1 JSON room logs, OBS-2 host game export that replays exactly, OBS-3 client error toasts with a code | `src/worker/room.ts`, `/api/rooms/:code/export`, `ErrorToasts.tsx` |
-| Met (new) | OBS-4 local-only `/api/health` (version and time; it cannot list rooms, since a Worker has no index of Durable Objects) | `src/worker/index.ts` |
+| Met (new) | OBS-4 `/api/health` (version and time; it cannot list rooms, since a Worker has no index of Durable Objects). Public since 2026-11-28 for the status page | `src/worker/index.ts` |
 | Met (new) | UX-6 44 px touch targets on touch screens | `styles.css` |
 | Met (new) | LIC-4 `THIRD_PARTY.md`, generated and checked | `scripts/third-party.mjs` |
 | Met (new) | Testing gate: `npm run check` (typecheck, tests, build, e2e, third-party list, secret scan); version shown in the footer | `package.json`, `vite.config.ts` |
 | Met (new, 2026-11-28) | SEO-1 robots.txt and sitemap.xml; SEO-2 noindex on game pages and real 404s; SEO-3 title, canonical, Open Graph, Twitter card and preview image; SEO-4 JSON-LD and `<noscript>` text; SEC-8 HTTPS redirect, HSTS and CSP on every page; OPS-4 cache rules | `public/robots.txt`, `public/sitemap.xml`, `public/_headers`, `public/og-image.png`, `index.html`, `src/worker/pages.ts`, `test/worker/pages.test.ts` |
 | Check | PERF-1 to 5, CAP-1, CAP-2, CAP-4, REL-5, UX-1, UX-2, UX-4, ENV-5, SEO-5, SEO-6, OPS-5 | Need a measured run or manual pass |
-| Gap | SEC-9 privacy note; OPS-1 uptime check; OPS-2 error alert; OPS-3 rollback rehearsal | Dashboard or content work, not code in this repo yet |
+| Met (new, 2026-11-28) | OPS-1 uptime: website and game server checked hourly on status.aroncreates.com | `/api/health` in `src/worker/index.ts`; `site.config.mjs` in `aronbodogai/status` |
+| Gap | SEC-9 privacy note; OPS-2 error alert (a Cloudflare dashboard notification); OPS-3 rollback rehearsal | Dashboard or content work, not code in this repo |
 | Accepted | SEC-6 and ENV-6 / LIC-5: fonts keep loading from the Fontshare and Google CDNs (owner's call, 2026-11-24), so a game makes those requests and needs internet | No change planned |
 | Gap | Coverage floors (engine 90%, projection 100%) | Needs `@vitest/coverage-v8` |
 | Changed | SEC-7: per-hour targets became per-minute (the built-in limiter only has 10 s and 60 s windows); no "at most 3 open rooms per client"; joins allowed up to 120 per minute because a whole party shares one home IP | Owner's call, 2026-11-24 |

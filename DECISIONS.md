@@ -79,7 +79,7 @@ If the prototype turns up, compare `settle()` and the bots against it and adjust
 - Per-IP limits use Cloudflare's built-in Rate Limiting bindings (`RL_CREATE_ROOM`, `RL_CREATE_TV`, `RL_CONNECT`), keyed by a hash of the IP: 5 rooms, 10 TV codes and 120 room connections per minute. Owner's call over a Durable Object limiter: adding a Durable Object class needs a migration, which branch preview builds cannot upload. The built-in limiter only has 10 s and 60 s windows and counts approximately per location, which is enough to stop scripted spam. Joins are generous because a whole party connects from one home router.
 - Lobbies close after 30 idle minutes (was 2 hours).
 - Hosts can download a finished game (seed + actions, `msm-game-v1`) for bug reports; only finished games, so nothing hidden leaks.
-- `/api/health` answers only when `PUBLIC_ORIGIN` is empty (local dev).
+- `/api/health` answers only when `PUBLIC_ORIGIN` is empty (local dev). Changed 2026-11-28: it is public, for the hourly check on status.aroncreates.com. It asks a Room Durable Object named `HEALTH` (never a real five-letter code) for `info()`, which writes nothing, and answers 503 if that fails. It shows only the version and time.
 - Fonts stay on the Fontshare and Google Fonts CDNs (owner's call): the offline and no-outside-requests targets are accepted as not met.
 - Pull request Previews (`wrangler preview` in Workers Builds) need a `previews` block in `wrangler.jsonc`: an empty `PUBLIC_ORIGIN` so links use the Preview URL, the two Durable Object bindings (each Preview gets its own storage) and separate rate-limit namespaces (2001–2003).
 
